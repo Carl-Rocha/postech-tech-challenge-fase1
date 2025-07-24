@@ -1,0 +1,17 @@
+.navbar_custom {
+    background-color: #004D61;
+    color: #ffffff;
+}
+
+.navbar_user {
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
+.navbar_user_icon {
+  color: #fa6400;
+  border: 1px solid #fa6400;
+  border-radius: 50%;
+  padding: 4px;
+}

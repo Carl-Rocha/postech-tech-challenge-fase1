@@ -2,11 +2,14 @@
 import styles from './cardSaldo.module.css'
 import { useState } from 'react';
 
-export default function CardSaldo() {
+interface ISaldo{
+  saldoTotal: number
+}
+export default function CardSaldo(props: ISaldo) {
   const nome = 'Joana';
   const dataAtual = new Date();
   const [mostrarSaldo, setMostrarSaldo] = useState(true);
-  const saldo = 2500.0;
+  const saldo = props.saldoTotal ?? 0;
 
   const dataFormatada = new Intl.DateTimeFormat('pt-BR', {
     weekday: 'long',
@@ -28,9 +31,9 @@ export default function CardSaldo() {
             <div>
                 <strong>Saldo</strong>
                 <button
-                className="btn btn-sm btn-outline-light"
-                onClick={() => setMostrarSaldo(!mostrarSaldo)}
-                title={mostrarSaldo ? 'Ocultar saldo' : 'Mostrar saldo'}
+                  className="btn btn-sm rounded-pill"
+                  onClick={() => setMostrarSaldo(!mostrarSaldo)}
+                  title={mostrarSaldo ? 'Ocultar saldo' : 'Mostrar saldo'}
                 >
                     <span className="material-icons">{mostrarSaldo ? 'visibility' : 'visibility_off'}</span>
                 </button>
@@ -39,11 +42,7 @@ export default function CardSaldo() {
                 <hr className="border-light border-opacity-50 my-1" />
                 <small>Conta Corrente</small>
                 <div className="fs-4 fw-semibold">
-                    {mostrarSaldo
-                    ? `R$ ${saldo.toLocaleString('pt-BR', {
-                        minimumFractionDigits: 2,
-                        })}`
-                    : '••••••••'}
+                    {mostrarSaldo ? `R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` : '••••••••'}
                 </div>
             </div>
           </div>

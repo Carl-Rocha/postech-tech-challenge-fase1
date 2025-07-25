@@ -3,6 +3,11 @@
     border-radius: 8px;
     padding: 1rem;
     box-shadow: 0 0 6px rgba(0,0,0,0.05);
+
+    button{
+        background-color: #004D61;
+        color: #fff;
+    }
 }
 
 .card_extrato{
@@ -15,6 +20,7 @@
         align-items: center;
         justify-content: space-between;
         border-bottom: 1px solid #004D61;
+        margin-bottom: 10px;
     }
 
     .card_extrato_valor{

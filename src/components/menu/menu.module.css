@@ -1,0 +1,26 @@
+.navbar_menu_icon {
+    color: #EB5E40;
+    padding: 4px;
+}
+
+.menu {
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 0 6px rgba(0,0,0,0.05);
+    height: 680px;
+}
+
+.menuItem {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #004d61;
+}
+
+.menuLink {
+    color: #004D61;
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

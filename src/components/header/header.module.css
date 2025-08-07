@@ -10,8 +10,13 @@
 }
 
 .navbar_user_icon {
-  color: #fa6400;
-  border: 1px solid #fa6400;
+  color: #EB5E40;
+  border: 1px solid #EB5E40;
   border-radius: 50%;
   padding: 4px;
+}
+
+.navbar_menu_icon {
+    color: #EB5E40;
+    padding: 4px;
 }

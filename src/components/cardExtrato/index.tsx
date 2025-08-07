@@ -46,11 +46,12 @@ export default function CardExtrato(props: {extrato: Array<IExtrato>}) {
           </button>
         </div>
       </div>
-          {listaExtrato.map((extratoMes: any) => (
-            <div className={styles.card_extrato}>
+          {listaExtrato.map((extratoMes: { 
+            mesExtrato: string; extratos: IExtrato[] & { dataPtBr?: string }[] }, idx: number) => (
+            <div className={styles.card_extrato} key={extratoMes.mesExtrato + idx}>
               <strong>{extratoMes.mesExtrato}</strong>
-                {extratoMes.extratos.map((extrato: any) => (
-                    <div className={styles.card_extrato_detalhe}>
+                {extratoMes.extratos.map((extrato: IExtrato & { dataPtBr?: string }, i: number) => (
+                    <div className={styles.card_extrato_detalhe} key={extrato.data + i}>
                       <div className={styles.card_extrato_valor}>
                         <span>{extrato.tipo}</span>
                         <h6>R$ {extrato.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</h6>

@@ -3,28 +3,33 @@
     border-radius: 8px;
     padding: 1rem;
     box-shadow: 0 0 6px rgba(0,0,0,0.05);
-
-    button{
-        background-color: #004D61;
-        color: #fff;
-    }
 }
 
-.card_extrato{
-    strong{
-        color: #004D61;
-    }
 
-    .card_extrato_detalhe{
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 1px solid #004D61;
-        margin-bottom: 10px;
-    }
+.card button {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
 
-    .card_extrato_valor{
-        display: flex;
-        flex-direction: column;
-    }
+.card_extrato {
+  margin-top: var(--spacing-md);
+}
+
+.card_extrato strong {
+  color: var(--color-primary);
+  font-size: var(--font-size-body);
+}
+
+.card_extrato_detalhe {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-primary);
+  margin-bottom: var(--spacing-xs);
+  padding-bottom: var(--spacing-xxs);
+}
+
+.card_extrato_valor {
+  display: flex;
+  flex-direction: column;
 }

@@ -1,8 +1,30 @@
 .newTransaction {
-    background-color: #004D61;
+    background-color: #CBCBCB !important;
     border-radius: 8px;
     padding: 1rem;
     box-shadow: 0 0 6px rgba(0,0,0,0.05);
-    color: #fff;
-    height: 40vh;
+    color: var(--color-tertiary);
+    max-height: 478px;
+
+    .selectTransaction {
+        border-radius: 8px;
+        max-width: 355px;
+        height: 48px;
+    }
+    .inputValue {
+        border-radius: 8px;
+        width: 250px;
+        height: 48px;
+    }
+
+    .button {
+        background-color: #1f3f50 !important;
+        color: var(--color-white);
+        border-radius: 8px;
+        width: 250px;
+        height: 48px;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+    }
 }

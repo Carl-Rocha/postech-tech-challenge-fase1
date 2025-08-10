@@ -3,11 +3,19 @@ import CardExtrato from "../components/cardExtrato";
 import CardSaldo from "../components/cardSaldo";
 import { MenuCard } from "../components/menu";
 
+interface Transacao {
+  id: number;
+  descricao: string;
+  valor: number;
+  data: string;
+  tipo: string;
+}
+
 interface Financeiro {
   nomeCliente: string;
   saldoTotal: number;
   dataAtualizacao: string;
-  transacao: any;
+  transacao: Transacao[];
 }
 
 async function buscarDadosFinanceiro(): Promise<Financeiro> {
@@ -32,10 +40,17 @@ export default async function Home() {
       </div>
       <div className="col-md-6">
         <CardSaldo saldoTotal={dadosFinanceiro.saldoTotal}></CardSaldo>
-        <NewTransaction></NewTransaction>
+        <div className="mt-3">
+          <NewTransaction></NewTransaction>
+        </div>
       </div>
-      <div className="col-md-6">
-        <CardExtrato extrato={dadosFinanceiro.transacao}></CardExtrato>
+      <div className="col-md-4">
+        <CardExtrato
+          extrato={dadosFinanceiro.transacao.map((t) => ({
+            ...t,
+            tipo: t.tipo as "TRANSFERENCIA" | "DEPOSITO",
+          }))}
+        ></CardExtrato>
       </div>
     </div>
   );

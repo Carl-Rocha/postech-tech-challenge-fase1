@@ -1,5 +1,6 @@
 import CardExtrato from "../components/cardExtrato";
 import CardSaldo from "../components/cardSaldo";
+import { MenuCard } from "../components/menu";
 
 interface Financeiro {
   nomeCliente: string;
@@ -25,7 +26,10 @@ export default async function Home() {
 
   return (
     <div className="d-flex flex-column flex-md-row gap-3 mt-3">
-      <div className="col-md-8">
+      <div className="col-md-2">
+        <MenuCard></MenuCard>
+      </div>
+      <div className="col-md-6">
         <CardSaldo saldoTotal={dadosFinanceiro.saldoTotal} nomeCliente={dadosFinanceiro.nomeCliente}></CardSaldo>
       </div>
       <div className="col-md-4">

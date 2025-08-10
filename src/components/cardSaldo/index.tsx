@@ -3,10 +3,10 @@ import styles from './cardSaldo.module.css'
 import { useState } from 'react';
 
 interface ISaldo{
+  nomeCliente: string,
   saldoTotal: number
 }
 export default function CardSaldo(props: ISaldo) {
-  const nome = 'Joana';
   const dataAtual = new Date();
   const [mostrarSaldo, setMostrarSaldo] = useState(true);
   const saldo = props.saldoTotal ?? 0;
@@ -22,7 +22,7 @@ export default function CardSaldo(props: ISaldo) {
     <div className={styles.card}>
       <div className="row justify-content-between">
         <div className='col-md-12'>
-          <h4>Olá, {nome}! :)</h4>
+          <h4>Olá, {props.nomeCliente}! :)</h4>
           <small>{dataFormatada}</small>
         </div>
 

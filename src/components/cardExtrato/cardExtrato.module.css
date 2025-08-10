@@ -17,6 +17,7 @@
 .card_extrato strong {
   color: var(--color-primary);
   font-size: var(--font-size-body);
+  text-transform: capitalize;
 }
 
 .card_extrato_detalhe {

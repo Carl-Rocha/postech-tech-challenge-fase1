@@ -26,7 +26,7 @@ export default async function Home() {
   return (
     <div className="d-flex flex-column flex-md-row gap-3 mt-3">
       <div className="col-md-8">
-        <CardSaldo saldoTotal={dadosFinanceiro.saldoTotal}></CardSaldo>
+        <CardSaldo saldoTotal={dadosFinanceiro.saldoTotal} nomeCliente={dadosFinanceiro.nomeCliente}></CardSaldo>
       </div>
       <div className="col-md-4">
         <CardExtrato extrato={dadosFinanceiro.transacao}></CardExtrato>

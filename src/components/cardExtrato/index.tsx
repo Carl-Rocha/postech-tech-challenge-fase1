@@ -30,9 +30,6 @@ function ordenarExtartoMes(extrato: Array<IExtrato>) {
 
 export default function CardExtrato(props: {extrato: Array<IExtrato>}) {
   const listaExtrato = ordenarExtartoMes(props.extrato) ?? [];
-
-  console.log(listaExtrato);
-  
   return (
     <div className={styles.card}>
       <div className="d-flex justify-content-between mb-2">
@@ -53,7 +50,7 @@ export default function CardExtrato(props: {extrato: Array<IExtrato>}) {
                     <div className={styles.card_extrato_detalhe}>
                       <div className={styles.card_extrato_valor}>
                         <span>{extrato.tipo}</span>
-                        <h6>R$ {extrato.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</h6>
+                        <h6>{extrato.tipo == 'Depósito' ? '- R$ ' : 'R$ '}{extrato.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</h6>
                       </div>
                       <span className='text-secondary'>{extrato.dataPtBr}</span>
                     </div>

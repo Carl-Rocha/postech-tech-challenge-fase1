@@ -1,3 +1,4 @@
+import NewTransaction from "@/components/newTransaction";
 import CardExtrato from "../components/cardExtrato";
 import CardSaldo from "../components/cardSaldo";
 import { MenuCard } from "../components/menu";
@@ -31,8 +32,9 @@ export default async function Home() {
       </div>
       <div className="col-md-6">
         <CardSaldo saldoTotal={dadosFinanceiro.saldoTotal}></CardSaldo>
+        <NewTransaction></NewTransaction>
       </div>
-      <div className="col-md-4">
+      <div className="col-md-6">
         <CardExtrato extrato={dadosFinanceiro.transacao}></CardExtrato>
       </div>
     </div>

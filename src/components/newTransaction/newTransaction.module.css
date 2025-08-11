@@ -6,11 +6,6 @@
     color: var(--color-tertiary);
     max-height: 478px;
 
-    .selectTransaction {
-        border-radius: 8px;
-        max-width: 355px;
-        height: 48px;
-    }
     .inputValue {
         border-radius: 8px;
         width: 250px;

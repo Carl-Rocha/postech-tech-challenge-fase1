@@ -31,7 +31,7 @@ export default function CardSaldo(props: ISaldo) {
             <div>
                 <strong>Saldo</strong>
                 <button
-                  className="btn btn-sm rounded-pill"
+                  className={`${styles.btn} btn btn-sm rounded-pill`}
                   onClick={() => setMostrarSaldo(!mostrarSaldo)}
                   title={mostrarSaldo ? 'Ocultar saldo' : 'Mostrar saldo'}
                 >
@@ -39,7 +39,7 @@ export default function CardSaldo(props: ISaldo) {
                 </button>
             </div>
             <div>
-                <hr className="border-light border-opacity-50 my-1" />
+                <hr className={`${styles.divider} border-light my-1`} />
                 <small>Conta Corrente</small>
                 <div className="fs-4 fw-semibold">
                     {mostrarSaldo ? `R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` : '••••••••'}

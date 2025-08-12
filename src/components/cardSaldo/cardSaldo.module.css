@@ -14,3 +14,12 @@
     display: flex;
     flex-direction: row-reverse;
 }
+
+.btn {
+    color: var(--color-danger);
+}
+
+.divider {
+    border-color: var(--color-danger) !important;
+    height: 2px;
+}

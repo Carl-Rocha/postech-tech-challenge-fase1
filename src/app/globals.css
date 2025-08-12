@@ -8,10 +8,13 @@
   --color-quaternary: #f8f8f8;
   --color-quinary: #47a138;
   --color-senary: #e4ede3;
+  --color-septenary: ##8b8b8b;
   --color-white: #ffffff;
 
   --background: #ffffff;
   --foreground: #171717;
+
+  --bs-body-bg: #E4EDE3 !important;
 
   /* Spacing */
   --spacing-xxs: 4px;

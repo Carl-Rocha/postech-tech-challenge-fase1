@@ -6,24 +6,37 @@ export interface IExtrato {
   tipo: 'TRANSFERENCIA' | 'DEPOSITO';
 }
 
-function ordenarExtartoMes(extrato: Array<IExtrato>) {
-  const extratoMes = extrato.reduce((listaExtratoMes: any, extrato: any) => {
+interface IExtratoComDataPtBr extends IExtrato {
+  dataPtBr?: string;
+}
+
+interface IExtratoMes {
+  mesExtrato: string;
+  extratos: IExtratoComDataPtBr[];
+}
+
+function ordenarExtartoMes(extrato: Array<IExtrato>): IExtratoMes[] {
+  const extratoMes = extrato.reduce((listaExtratoMes: IExtratoMes[], extrato: IExtrato) => {
     const date = new Date(extrato.data);
     const mesExtrato = date.toLocaleString('pt-BR', { month: 'long' });
-    const grupoMes = listaExtratoMes.find((extrato: any) => extrato.mesExtrato == mesExtrato);
+    const grupoMes = listaExtratoMes.find((item) => item.mesExtrato === mesExtrato);
     const [ano, mes, dia] = extrato.data.split('-');
-    extrato.dataPtBr = `${dia}/${mes}/${ano}`
-    
-    if(grupoMes){
-      grupoMes.extratos.push(extrato);
-    } else{
+    const extratoComDataPtBr: IExtratoComDataPtBr = {
+      ...extrato,
+      dataPtBr: `${dia}/${mes}/${ano}`
+    };
+
+    if (grupoMes) {
+      grupoMes.extratos.push(extratoComDataPtBr);
+    } else {
       listaExtratoMes.push({
-        mesExtrato, extratos: [extrato]
-      })
+        mesExtrato,
+        extratos: [extratoComDataPtBr]
+      });
     }
 
     return listaExtratoMes;
-  }, [])
+  }, []);
 
   return extratoMes;
 }

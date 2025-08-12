@@ -1,10 +1,9 @@
 'use client'
-import Link from "next/link";
 import styles from './header.module.css'
 
 import React, { useState } from "react";
 
-// import { MenuBar } from "../menu";
+import { MenuBar } from "../menu";
 
 
 export function Header(){
@@ -21,9 +20,9 @@ export function Header(){
                             onClick={() => setShowMenu(true)}
                         >
                             <span className={`material-icons ${styles.navbar_menu_icon}`}>menu</span>
-                            {/* {showMenu && (
+                            {showMenu && (
                                 <MenuBar onClose={() => setShowMenu(false)} />
-                            )} */}
+                            )}
                         </div>
                     )}
                 </div>

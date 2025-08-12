@@ -1,0 +1,76 @@
+import styles from './cardExtrato.module.css'
+
+export interface IExtrato {
+  valor: number;
+  data: string;
+  tipo: 'TRANSFERENCIA' | 'DEPOSITO';
+}
+
+interface IExtratoComDataPtBr extends IExtrato {
+  dataPtBr?: string;
+}
+
+interface IExtratoMes {
+  mesExtrato: string;
+  extratos: IExtratoComDataPtBr[];
+}
+
+function ordenarExtartoMes(extrato: Array<IExtrato>): IExtratoMes[] {
+  const extratoMes = extrato.reduce((listaExtratoMes: IExtratoMes[], extrato: IExtrato) => {
+    const date = new Date(extrato.data);
+    const mesExtrato = date.toLocaleString('pt-BR', { month: 'long' });
+    const grupoMes = listaExtratoMes.find((item) => item.mesExtrato === mesExtrato);
+    const [ano, mes, dia] = extrato.data.split('-');
+    const extratoComDataPtBr: IExtratoComDataPtBr = {
+      ...extrato,
+      dataPtBr: `${dia}/${mes}/${ano}`
+    };
+
+    if (grupoMes) {
+      grupoMes.extratos.push(extratoComDataPtBr);
+    } else {
+      listaExtratoMes.push({
+        mesExtrato,
+        extratos: [extratoComDataPtBr]
+      });
+    }
+
+    return listaExtratoMes;
+  }, []);
+
+  return extratoMes;
+}
+
+export default function CardExtrato(props: {extrato: Array<IExtrato>}) {
+  const listaExtrato = ordenarExtartoMes(props.extrato) ?? [];
+  return (
+    <div className={styles.card}>
+      <div className="d-flex justify-content-between mb-2">
+        <h4>Extrato</h4>
+        <div>
+          <button className="btn btn-sm rounded-pill me-2" title="Editar">
+              <span className="material-icons">edit</span>
+          </button>
+          <button className="btn btn-sm rounded-pill" title="Excluir">
+              <span className="material-icons">delete</span>
+          </button>
+        </div>
+      </div>
+          {listaExtrato.map((extratoMes: { 
+            mesExtrato: string; extratos: IExtrato[] & { dataPtBr?: string }[] }, idx: number) => (
+            <div className={styles.card_extrato} key={extratoMes.mesExtrato + idx}>
+              <strong>{extratoMes.mesExtrato}</strong>
+                {extratoMes.extratos.map((extrato: IExtrato & { dataPtBr?: string }, i: number) => (
+                    <div className={styles.card_extrato_detalhe} key={extrato.data + i}>
+                      <div className={styles.card_extrato_valor}>
+                        <span>{extrato.tipo}</span>
+                        <h6>{extrato.tipo == 'Depósito' ? '- R$ ' : 'R$ '}{extrato.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</h6>
+                      </div>
+                      <span className='text-secondary'>{extrato.dataPtBr}</span>
+                    </div>
+                ))}
+            </div>
+          ))}
+    </div>
+  );
+}

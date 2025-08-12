@@ -1,0 +1,25 @@
+.card {
+    background-color: #004D61;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 0 6px rgba(0,0,0,0.05);
+    color: #fff;
+    height: 40vh;
+    background-image: url('/images/pixels1.png'), url('/images/pixels2.png'),url('/images/ilustration1.png');
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: top right, bottom left, bottom left;
+    background-size: auto, auto, auto;
+}
+.card_saldo{
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.btn {
+    color: var(--color-danger);
+}
+
+.divider {
+    border-color: var(--color-danger) !important;
+    height: 2px;
+}

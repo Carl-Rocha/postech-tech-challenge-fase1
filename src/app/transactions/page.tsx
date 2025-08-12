@@ -20,6 +20,11 @@ export default function TransactionsPage() {
 
   return (
     <div className="mt-4">
+      <Link href="/">
+        <Button variant="secondary" className="mb-3">
+          Voltar
+        </Button>
+      </Link>
       <Typography as="h1" variant="heading" className="mb-4">
         Transações
       </Typography>

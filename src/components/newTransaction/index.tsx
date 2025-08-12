@@ -6,9 +6,8 @@ import CustomDropdown from '../custonDropdown';
 import { Button, Input, Typography } from '@/design-system';
 
 const transactionOptions = [
-  { value: 'cambio', label: 'Câmbio de Moeda' },
-  { value: 'docted', label: 'DOC/TED' },
-  { value: 'emprestimo', label: 'Empréstimo e Financiamento' },
+  { value: 'DEPOSITO', label: 'Depósito' },
+  { value: 'TRANSFERENCIA', label: 'Transferência' },
 ];
 
 interface NewTransactionProps {

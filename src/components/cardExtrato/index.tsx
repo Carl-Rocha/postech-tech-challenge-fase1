@@ -1,6 +1,8 @@
+import Link from 'next/link';
 import styles from './cardExtrato.module.css'
 
 export interface IExtrato {
+  id: number;
   valor: number;
   data: string;
   tipo: 'TRANSFERENCIA' | 'DEPOSITO';
@@ -41,20 +43,17 @@ function ordenarExtartoMes(extrato: Array<IExtrato>): IExtratoMes[] {
   return extratoMes;
 }
 
-export default function CardExtrato(props: {extrato: Array<IExtrato>}) {
-  const listaExtrato = ordenarExtartoMes(props.extrato) ?? [];
+interface CardExtratoProps {
+  extrato: Array<IExtrato>;
+  onDelete?: (id: number) => void;
+}
+
+export default function CardExtrato({ extrato, onDelete }: CardExtratoProps) {
+  const listaExtrato = ordenarExtartoMes(extrato) ?? [];
   return (
     <div className={styles.card}>
       <div className="d-flex justify-content-between mb-2">
         <h4>Extrato</h4>
-        <div>
-          <button className="btn btn-sm rounded-pill me-2" title="Editar">
-              <span className="material-icons">edit</span>
-          </button>
-          <button className="btn btn-sm rounded-pill" title="Excluir">
-              <span className="material-icons">delete</span>
-          </button>
-        </div>
       </div>
           {listaExtrato.map((extratoMes: { 
             mesExtrato: string; extratos: IExtrato[] & { dataPtBr?: string }[] }, idx: number) => (
@@ -62,9 +61,28 @@ export default function CardExtrato(props: {extrato: Array<IExtrato>}) {
               <strong>{extratoMes.mesExtrato}</strong>
                 {extratoMes.extratos.map((extrato: IExtrato & { dataPtBr?: string }, i: number) => (
                     <div className={styles.card_extrato_detalhe} key={extrato.data + i}>
-                      <div className={styles.card_extrato_valor}>
-                        <span>{extrato.tipo}</span>
-                        <h6>{extrato.tipo == 'Depósito' ? '- R$ ' : 'R$ '}{extrato.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</h6>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div className={styles.card_extrato_valor}>
+                          <span>{extrato.tipo}</span>
+                          <h6>
+                            {extrato.tipo === 'DEPOSITO' ? 'R$ ' : '- R$ '}
+                            {extrato.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </h6>
+                        </div>
+                        <div>
+                          <Link href={`/transactions/${extrato.id}/edit`} className="btn btn-sm rounded-pill me-2" title="Editar">
+                            <span className="material-icons">edit</span>
+                          </Link>
+                          {onDelete && (
+                            <button
+                              className="btn btn-sm rounded-pill"
+                              title="Excluir"
+                              onClick={() => onDelete(extrato.id)}
+                            >
+                              <span className="material-icons">delete</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <span className='text-secondary'>{extrato.dataPtBr}</span>
                     </div>

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Transaction } from '@/models/Transaction';
 import { TransactionService } from '@/services/TransactionService';
 import NewTransaction from '@/components/newTransaction';
+import { Button } from '@/design-system';
 
 export default function NewTransactionPage() {
   const router = useRouter();
@@ -19,5 +20,12 @@ export default function NewTransactionPage() {
     router.push('/transactions');
   };
 
-  return <NewTransaction onSubmit={handleSubmit} />;
+  return (
+    <div className="mt-4">
+      <Button variant="secondary" className="mb-3" onClick={() => router.back()}>
+        Voltar
+      </Button>
+      <NewTransaction onSubmit={handleSubmit} />
+    </div>
+  );
 }

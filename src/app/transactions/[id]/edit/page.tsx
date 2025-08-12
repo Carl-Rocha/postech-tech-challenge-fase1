@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Transaction } from '@/models/Transaction';
 import { TransactionService } from '@/services/TransactionService';
 import NewTransaction from '@/components/newTransaction';
-import { Typography } from '@/design-system';
+import { Button, Typography } from '@/design-system';
 
 export default function EditTransactionPage() {
   const params = useParams();
@@ -36,9 +36,14 @@ export default function EditTransactionPage() {
   }
 
   return (
-    <NewTransaction
-      initial={{ type: transaction.tipo, amount: transaction.valor.toString() }}
-      onSubmit={handleSubmit}
-    />
+    <div className="mt-4">
+      <Button variant="secondary" className="mb-3" onClick={() => router.back()}>
+        Voltar
+      </Button>
+      <NewTransaction
+        initial={{ type: transaction.tipo, amount: transaction.valor.toString() }}
+        onSubmit={handleSubmit}
+      />
+    </div>
   );
 }

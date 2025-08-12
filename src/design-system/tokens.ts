@@ -1,3 +1,4 @@
+// Tokens de design alinhados com o layout do Figma
 export const colors = {
   primary: 'var(--color-primary)',
   secondary: 'var(--color-secondary)',
@@ -8,7 +9,7 @@ export const colors = {
   senary: 'var(--color-senary)',
   septenary: 'var(--color-septenary)',
   white: 'var(--color-white)',
-};
+} as const;
 
 export const spacing = {
   xxs: 'var(--spacing-xxs)',
@@ -17,11 +18,15 @@ export const spacing = {
   md: 'var(--spacing-md)',
   lg: 'var(--spacing-lg)',
   xl: 'var(--spacing-xl)',
-};
+} as const;
 
 export const typography = {
   fontFamily: 'var(--font-family)',
   heading: 'var(--font-size-heading)',
   body: 'var(--font-size-body)',
   caption: 'var(--font-size-caption)',
-};
+} as const;
+
+export type ColorToken = keyof typeof colors;
+export type SpacingToken = keyof typeof spacing;
+export type TypographyToken = keyof typeof typography;

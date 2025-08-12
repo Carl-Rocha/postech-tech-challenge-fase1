@@ -1,10 +1,9 @@
 .card {
-    background-color: #FFFFFF;
-    border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 0 6px rgba(0,0,0,0.05);
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
 }
-
 
 .card button {
   background-color: var(--color-primary);
@@ -34,4 +33,5 @@
 .card_extrato_valor {
   display: flex;
   flex-direction: column;
+  width: 150px;
 }

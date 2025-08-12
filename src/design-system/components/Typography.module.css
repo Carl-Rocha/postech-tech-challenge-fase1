@@ -1,0 +1,15 @@
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: 600;
+}
+
+.body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+}
+
+.caption {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+}

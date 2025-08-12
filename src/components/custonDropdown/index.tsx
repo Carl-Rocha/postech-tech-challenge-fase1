@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import styles from './custonDropdown.module.css';
+import React, { useState, useEffect } from "react";
+import styles from "./custonDropdown.module.css";
 
 interface DropdownItem {
   value: string;
@@ -12,14 +12,31 @@ interface CustomDropdownProps {
   items: DropdownItem[];
   placeholder: string;
   onSelect: (value: string) => void;
+  value?: string;
 }
 
-const CustomDropdown: React.FC<CustomDropdownProps> = ({ items, placeholder, onSelect }) => {
+const CustomDropdown: React.FC<CustomDropdownProps> = ({
+  items,
+  placeholder,
+  onSelect,
+  value,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState(placeholder);
 
+  useEffect(() => {
+    if (value) {
+      const found = items.find((i) => i.value === value);
+      setSelectedLabel(found?.label ?? placeholder);
+    } else {
+      setSelectedLabel(placeholder);
+    }
+  }, [value, items, placeholder]);
+
   const handleSelect = (item: DropdownItem) => {
-    setSelectedLabel(item.label);
+    if (value === undefined) {
+      setSelectedLabel(item.label);
+    }
     onSelect(item.value);
     setIsOpen(false);
   };
@@ -27,11 +44,17 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ items, placeholder, onS
   return (
     <div className={styles.dropdownContainer}>
       <div
-        className={`${styles.dropdownHeader} ${isOpen ? styles.dropdownHeaderOpen : ''}`}
+        className={`${styles.dropdownHeader} ${
+          isOpen ? styles.dropdownHeaderOpen : ""
+        }`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className={styles.dropdownSelectedLabel}>{selectedLabel}</span>
-        <span className={`${styles.dropdownArrow} ${isOpen ? styles.dropdownArrowOpen : ''}`}>
+        <span
+          className={`${styles.dropdownArrow} ${
+            isOpen ? styles.dropdownArrowOpen : ""
+          }`}
+        >
           &#9650;
         </span>
       </div>
@@ -41,7 +64,9 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ items, placeholder, onS
           {items.map((item, index) => (
             <div
               key={index}
-              className={`${styles.dropdownItem} ${selectedLabel === item.label ? styles.dropdownItemSelected : ''}`}
+              className={`${styles.dropdownItem} ${
+                selectedLabel === item.label ? styles.dropdownItemSelected : ""
+              }`}
               onClick={() => handleSelect(item)}
             >
               {item.label}

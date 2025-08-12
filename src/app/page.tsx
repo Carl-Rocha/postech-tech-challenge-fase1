@@ -1,56 +1,68 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import NewTransaction from "@/components/newTransaction";
 import CardExtrato from "../components/cardExtrato";
 import CardSaldo from "../components/cardSaldo";
 import { MenuCard } from "../components/menu";
+import { Transaction } from "@/models/Transaction";
+import { TransactionService } from "@/services/TransactionService";
 
-interface Transacao {
-  id: number;
-  descricao: string;
-  valor: number;
-  data: string;
-  tipo: string;
-}
+export default function Home() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-interface Financeiro {
-  nomeCliente: string;
-  saldoTotal: number;
-  dataAtualizacao: string;
-  transacao: Transacao[];
-}
+  useEffect(() => {
+    TransactionService.getAll().then(setTransactions);
+  }, []);
 
-async function buscarDadosFinanceiro(): Promise<Financeiro> {
-  const res = await fetch(`https://api.npoint.io/d8d6b9bdffdf768a34ce`, {
-    cache: 'no-store', // busca atualizado no SSR
-  });
+  const saldo = transactions.reduce(
+    (acc, t) => acc + (t.tipo === "DEPOSITO" ? t.valor : -t.valor),
+    0
+  );
 
-  if (!res.ok) {
-    throw new Error('Erro ao buscar extrato');
-  }
+  const handleNewTransaction = async ({
+    type,
+    amount,
+  }: {
+    type: string;
+    amount: string;
+  }) => {
+    const newTransaction = new Transaction({
+      id: Date.now(),
+      tipo: type,
+      valor: parseFloat(amount),
+      data: new Date().toISOString().split("T")[0],
+    });
+    await TransactionService.add(newTransaction);
+    setTransactions((prev) => [...prev, newTransaction]);
+  };
 
-  return res.json();
-}
-
-export default async function Home() {
-  const dadosFinanceiro: Financeiro = await buscarDadosFinanceiro();
+  const handleDelete = async (id: number) => {
+    await TransactionService.remove(id);
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+  };
 
   return (
     <div className="d-flex flex-column flex-md-row gap-3 mt-3">
       <div className="col-md-2">
-        <MenuCard></MenuCard>
+        <MenuCard />
       </div>
       <div className="col-md-6">
-        <CardSaldo saldoTotal={dadosFinanceiro.saldoTotal}></CardSaldo>
+        <CardSaldo nomeCliente="Joana" saldoTotal={saldo} />
         <div className="mt-3">
-          <NewTransaction></NewTransaction>
+          <NewTransaction onSubmit={handleNewTransaction} />
         </div>
       </div>
       <div className="col-md-4">
         <CardExtrato
-          extrato={dadosFinanceiro.transacao.map((t) => ({
-            ...t,
+          extrato={transactions.map((t) => ({
+            id: t.id,
+            valor: t.valor,
+            data: t.data,
             tipo: t.tipo as "TRANSFERENCIA" | "DEPOSITO",
           }))}
-        ></CardExtrato>
+          onDelete={handleDelete}
+        />
       </div>
     </div>
   );

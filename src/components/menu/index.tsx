@@ -32,7 +32,10 @@ export function MenuCard() {
     return (
         <div className={styles.menu}>
             <div className={styles.menuItem}>
-                <Link href="/home" className={styles.menuLink}>Início</Link>
+                <Link href="/" className={styles.menuLink}>Início</Link>
+            </div>
+            <div className={styles.menuItem}>
+                <Link href="/transactions" className={styles.menuLink}>Transações</Link>
             </div>
             <div className={styles.menuItem}>
                 <Link href="/transfer" className={styles.menuLink}>Transferência</Link>

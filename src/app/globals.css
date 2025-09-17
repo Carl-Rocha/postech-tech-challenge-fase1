@@ -1,7 +1,7 @@
 :root {
 
   /* Colors */
-  --color-primary: #004d61;
+  --color-primary: #5D87FF;
   --color-secondary: #e4ede3;
   --color-tertiary: #dee9ea;
   --color-danger: #ff5c5c;
@@ -15,6 +15,7 @@
   --foreground: #171717;
 
   --bs-body-bg: #E4EDE3 !important;
+  --bs-primary: #5D87FF;
 
   /* Spacing */
   --spacing-xxs: 4px;

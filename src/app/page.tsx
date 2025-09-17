@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import NewTransaction from "@/components/newTransaction";
-import CardExtrato from "../components/cardExtrato";
-import CardSaldo from "../components/cardSaldo";
-import { MenuCard } from "../components/menu";
 import { Transaction } from "@/models/Transaction";
 import { TransactionService } from "@/services/TransactionService";
+import Link from 'next/link';
+import Image from "next/image";
+import { Button, Card } from "@/design-system";
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -43,27 +42,136 @@ export default function Home() {
   };
 
   return (
-    <div className="d-flex flex-column flex-md-row gap-3 mt-3">
-      <div className="col-md-2">
-        <MenuCard />
-      </div>
-      <div className="col-md-6">
-        <CardSaldo nomeCliente="Joana" saldoTotal={saldo} />
-        <div className="mt-3">
-          <NewTransaction onSubmit={handleNewTransaction} />
+    <div>
+      <div className="container">
+        <div className="row align-items-center">
+          <div className="col-12 col-md-6 text-center text-md-start mb-4 mb-md-0">
+            <h1 className="fw-bold text-primary mb-3">Bytebank</h1>
+            <h4 className="mb-3">
+              Experimente mais liberdade no controle da sua vida financeira.
+            </h4>
+            <p className="mb-4">
+              Gerencie suas transações financeiras de forma rápida e intuitiva.
+              Sem complicações, sem taxas escondidas. Apenas simplicidade bancária.
+            </p>
+            <Button className=" btn-lg fw-bold px-4 shadow">
+              Abrir Minha Conta
+            </Button>
+          </div>
+
+          {/* Imagem */}
+          <div className="col-12 col-md-6 text-center">
+            <div className="d-flex align-items-center justify-content-center" style={{ height: 400 }}>
+              <div className="text-center">
+                <Image
+                  src="/images/online-banking.svg"
+                  alt="Online Banking"
+                  width={400}
+                  height={400}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Serviços */}
+        <div className="text-center">
+          <h2 className="mb-4">Nossos Serviços</h2>
+          <div className="row g-4">
+            <div className="col-12 col-md-4">
+              <Card className="p-4 shadow">
+                <div className="mb-3">
+                  <i className="bi bi-receipt text-primary" style={{ fontSize: 64 }} />
+                </div>
+                <h5 className="mb-2">Gestão de Gastos e Receitas</h5>
+                <p>
+                  Registre e organize suas transações com categorias personalizadas e 
+                  acompanhe tudo em um só lugar.
+                </p>
+              </Card>
+            </div>
+
+            <div className="col-12 col-md-4">
+              <Card className="p-4 shadow">
+                <div className="mb-3">
+                  <i className="bi bi-piggy-bank text-primary" style={{ fontSize: 64 }} />
+                </div>
+                <h5 className="mb-2">Relatórios e Gráficos Inteligentes</h5>
+                <p>
+                  Visualize suas finanças com relatórios detalhados e gráficos claros.
+                </p>
+              </Card>
+            </div>
+
+            <div className="col-12 col-md-4">
+              <Card className="p-4 shadow">
+                <div className="mb-3">
+                  <i className="bi bi-key text-primary" style={{ fontSize: 64 }} />
+                </div>
+                <h5 className="mb-2">Planejamento Financeiro</h5>
+                <p>
+                  Defina metas de economia e acompanhe seu progresso para alcançar seus objetivos
+                </p>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="col-md-4">
-        <CardExtrato
-          extrato={transactions.map((t) => ({
-            id: t.id,
-            valor: t.valor,
-            data: t.data,
-            tipo: t.tipo as "TRANSFERENCIA" | "DEPOSITO",
-          }))}
-          onDelete={handleDelete}
-        />
-      </div>
+
+      {/* Rodapé */}
+      <footer className="bg-light py-5 mt-5">
+        <div className="container">
+          <div className="row">
+            {/* Logo e descrição */}
+            <div className="col-12 col-md-4 mb-4 mb-md-0">
+              <h3 className="text-primary fw-bold mb-3">Bytebank</h3>
+            </div>
+            
+            {/* Links úteis */}
+            <div className="col-12 col-md-4 mb-4 mb-md-0">
+              <h5 className="fw-bold mb-3">Serviços</h5>
+              <ul className="list-unstyled">
+                <li className="mb-2">
+                  <a href="#" className="text-decoration-none text-muted">Conta Corrente</a>
+                </li>
+                <li className="mb-2">
+                  <a href="#" className="text-decoration-none text-muted">Conta PJ</a>
+                </li>
+                <li className="mb-2">
+                  <a href="#" className="text-decoration-none text-muted">Canal de Ética</a>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Contato */}
+            <div className="col-12 col-md-4">
+              <h5 className="fw-bold mb-3">Contato</h5>
+              <ul className="list-unstyled">
+                <li className="mb-2 text-muted">
+                  <i className="bi bi-envelope me-2"></i>
+                  meajuda@bytebank.com.br
+                </li>
+                <li className="mb-2 text-muted">
+                  <i className="bi bi-link-45deg me-2"></i>
+                  ouvidoria@bytebank.com.br
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <hr className="my-4" />
+          
+          {/* Direitos autorais */}
+          <div className="row align-items-center">
+            <div className="col-12 col-md-6 text-center text-md-start mb-3 mb-md-0">
+              <p className="text-muted mb-0">© Bytebank - Todos os direitos reservados</p>
+            </div>
+            <div className="col-12 col-md-6 text-center text-md-end">
+              <p className="text-muted mb-0">800004 25008</p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

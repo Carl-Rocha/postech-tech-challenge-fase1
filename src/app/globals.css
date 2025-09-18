@@ -15,7 +15,8 @@
   --foreground: #171717;
 
   --bs-body-bg: #E4EDE3 !important;
-  --bs-primary: #5D87FF;
+  --bs-primary: #5D87FF !important;
+  --bs-text-primary: #5D87FF !important;
 
   /* Spacing */
   --spacing-xxs: 4px;

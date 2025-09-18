@@ -6,6 +6,9 @@ import { TransactionService } from "@/services/TransactionService";
 import Link from 'next/link';
 import Image from "next/image";
 import { Button, Card } from "@/design-system";
+import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded';
+import PaidRoundedIcon from '@mui/icons-material/PaidRounded';
+import FeedRoundedIcon from '@mui/icons-material/FeedRounded';
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -52,7 +55,7 @@ export default function Home() {
             </h4>
             <p className="mb-4">
               Gerencie suas transações financeiras de forma rápida e intuitiva.
-              Sem complicações, sem taxas escondidas. Apenas simplicidade bancária.
+              Sem complicações, sem taxas escondidas e totalmente do seu jeito.
             </p>
             <Button className=" btn-lg fw-bold px-4 shadow">
               Abrir Minha Conta
@@ -81,7 +84,7 @@ export default function Home() {
             <div className="col-12 col-md-4">
               <Card className="p-4 shadow">
                 <div className="mb-3">
-                  <i className="bi bi-receipt text-primary" style={{ fontSize: 64 }} />
+                  <FeedRoundedIcon color="primary" style={{ fontSize: 64 }} />
                 </div>
                 <h5 className="mb-2">Gestão de Gastos e Receitas</h5>
                 <p>
@@ -94,7 +97,7 @@ export default function Home() {
             <div className="col-12 col-md-4">
               <Card className="p-4 shadow">
                 <div className="mb-3">
-                  <i className="bi bi-piggy-bank text-primary" style={{ fontSize: 64 }} />
+                  <InsertChartOutlinedRoundedIcon color="primary" style={{ fontSize: 64 }} />
                 </div>
                 <h5 className="mb-2">Relatórios e Gráficos Inteligentes</h5>
                 <p>
@@ -106,7 +109,7 @@ export default function Home() {
             <div className="col-12 col-md-4">
               <Card className="p-4 shadow">
                 <div className="mb-3">
-                  <i className="bi bi-key text-primary" style={{ fontSize: 64 }} />
+                  <PaidRoundedIcon color="primary" style={{ fontSize: 64 }} />
                 </div>
                 <h5 className="mb-2">Planejamento Financeiro</h5>
                 <p>

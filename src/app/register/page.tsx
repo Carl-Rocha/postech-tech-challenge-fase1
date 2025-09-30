@@ -8,21 +8,22 @@ import {
   Button,
   Typography,
   Link,
-  Divider,
   InputAdornment,
   IconButton,
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
-  Email,
-  Person,
-  Lock,
 } from '@mui/icons-material';
 import Image from 'next/image';
+import { AuthService } from '@/services/AuthService';
+import { useRouter } from 'next/navigation';
 
 export default function Register() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -37,10 +38,23 @@ export default function Register() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Register data:', formData);
-    // Implementar lógica de registro aqui
+    setLoading(true);
+    setError('');
+
+    try {
+      await AuthService.register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+      router.push('/login');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao criar conta');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,7 +62,6 @@ export default function Register() {
       minHeight: '100vh', 
       display: 'flex'
     }}>
-      {/* Seção Esquerda - Ilustração */}
       <Box sx={{
         flex: 1,
         display: { xs: 'none', lg: 'flex' },
@@ -59,7 +72,6 @@ export default function Register() {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Ilustração principal */}
         <Box sx={{ textAlign: 'center', zIndex: 2 }}>
           <Image
             src="/images/login.svg"
@@ -70,7 +82,7 @@ export default function Register() {
         </Box>
       </Box>
 
-      {/* Seção Direita - Formulário */}
+      {/* form */}
       <Box sx={{
         flex: { xs: 1, lg: 0.6 },
         display: 'flex',
@@ -86,7 +98,7 @@ export default function Register() {
           boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
           borderRadius: 3
         }}>
-          {/* Header */}
+          {/* header */}
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography variant="h4" sx={{ 
               fontWeight: 'bold', 
@@ -103,7 +115,7 @@ export default function Register() {
             </Typography>
           </Box>
 
-          {/* Formulário */}
+          {/* form */}
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
               fullWidth
@@ -146,59 +158,15 @@ export default function Register() {
               }}
             />
 
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="body2" sx={{ color: '#7f8c8d', fontSize: '0.85rem' }}>
-                Ao criar uma conta, você concorda com nossos{' '}
-                <Link 
-                  href="#" 
-                  sx={{ 
-                    color: '#5D87FF', 
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' }
-                  }}
-                >
-                  Termos de Uso
-                </Link>
-                {' '}e{' '}
-                <Link 
-                  href="#" 
-                  sx={{ 
-                    color: '#5D87FF', 
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' }
-                  }}
-                >
-                  Política de Privacidade
-                </Link>
+            {error && (
+              <Typography color="error" sx={{ mb: 2, textAlign: 'center' }}>
+                {error}
               </Typography>
-            </Box>
+            )}
 
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{
-                background: 'linear-gradient(135deg, #5D87FF 0%, #8BB3FF 100%)',
-                padding: 1.5,
-                fontSize: '1.1rem',
-                fontWeight: 'bold',
-                borderRadius: 2,
-                textTransform: 'none',
-                boxShadow: '0 4px 15px rgba(93, 135, 255, 0.3)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #4A6FE8 0%, #7BA3FF 100%)',
-                  boxShadow: '0 6px 20px rgba(93, 135, 255, 0.4)',
-                }
-              }}
-            >
-              Criar Conta
+            <Button variant="contained" className="mb-3" type="submit" disabled={loading} fullWidth sx={{fontWeight: 'bold'}}>
+              {loading ? 'Criando conta...' : 'Criar Conta'}
             </Button>
-
-            <Divider sx={{ my: 3 }}>
-              <Typography variant="body2" sx={{ color: '#7f8c8d' }}>
-                ou crie com
-              </Typography>
-            </Divider>
 
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" sx={{ color: '#7f8c8d' }}>

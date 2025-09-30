@@ -8,23 +8,24 @@ import {
   Button,
   Typography,
   Link,
-  Divider,
   InputAdornment,
   IconButton,
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
-  AccountBalanceWallet,
-  Security,
-  TrendingUp,
 } from '@mui/icons-material';
 import Image from 'next/image';
+import { AuthService } from '@/services/AuthService';
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
   });
 
@@ -36,9 +37,23 @@ export default function Login() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login data:', formData);
+    setLoading(true);
+    setError('');
+
+    try {
+      await AuthService.login({
+        email: formData.email,
+        password: formData.password,
+      });
+  
+      router.push('/transactions');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao fazer login');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,7 +61,6 @@ export default function Login() {
       minHeight: '100vh', 
       display: 'flex'
     }}>
-      {/* Seção Esquerda - Ilustração */}
       <Box sx={{
         flex: 1,
         display: { xs: 'none', lg: 'flex' },
@@ -59,7 +73,6 @@ export default function Login() {
       }}>
 
 
-        {/* Ilustração principal */}
         <Box sx={{ textAlign: 'center', zIndex: 2 }}>
           <Image
             src="/images/login.svg"
@@ -86,7 +99,7 @@ export default function Login() {
           boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
           borderRadius: 3
         }}>
-          {/* Header */}
+          {/* header */}
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography variant="h4" sx={{ 
               fontWeight: 'bold', 
@@ -103,13 +116,14 @@ export default function Login() {
             </Typography>
           </Box>
 
-          {/* Formulário */}
+          {/* form */}
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label="Usuário"
-              name="username"
-              value={formData.username}
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
               onChange={handleInputChange}
               sx={{ mb: 3 }}
             />
@@ -149,38 +163,21 @@ export default function Login() {
               </Link>
             </Box>
 
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{
-                background: 'linear-gradient(135deg, #5D87FF 0%, #8BB3FF 100%)',
-                padding: 1.5,
-                fontSize: '1.1rem',
-                fontWeight: 'bold',
-                borderRadius: 2,
-                textTransform: 'none',
-                boxShadow: '0 4px 15px rgba(93, 135, 255, 0.3)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #4A6FE8 0%, #7BA3FF 100%)',
-                  boxShadow: '0 6px 20px rgba(93, 135, 255, 0.4)',
-                }
-              }}
-            >
-              Entrar
-            </Button>
-
-            <Divider sx={{ my: 3 }}>
-              <Typography variant="body2" sx={{ color: '#7f8c8d' }}>
-                ou entre com
+            {error && (
+              <Typography color="error" sx={{ mb: 2, textAlign: 'center' }}>
+                {error}
               </Typography>
-            </Divider>
+            )}
+
+            <Button variant="contained" className="mb-3" type="submit" disabled={loading} fullWidth sx={{fontWeight: 'bold'}}>
+              {loading ? 'Entrando...' : 'Entrar'}
+            </Button>
 
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" sx={{ color: '#7f8c8d' }}>
                 Novo no Bytebank?{' '}
                 <Link 
-                  href="#" 
+                  href="/register" 
                   sx={{ 
                     color: '#5D87FF', 
                     textDecoration: 'none',

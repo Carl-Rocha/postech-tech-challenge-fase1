@@ -57,7 +57,9 @@ export default function Home() {
               Gerencie suas transações financeiras de forma rápida e intuitiva.
               Sem complicações, sem taxas escondidas e totalmente do seu jeito.
             </p>
-            <Button className=" btn-lg fw-bold px-4 shadow">
+            <Button className=" btn-lg fw-bold px-4 shadow" onClick={() => {
+              window.location.href = '/register';
+            }}>
               Abrir Minha Conta
             </Button>
           </div>

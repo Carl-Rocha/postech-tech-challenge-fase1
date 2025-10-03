@@ -21,19 +21,18 @@ export default function Transactions() {
   const router = useRouter();
 
   useEffect(() => {
-    setAuth(isAuthenticated());
-    if (isAuthenticated()) {
+    const authenticated = isAuthenticated();
+    setAuth(authenticated);
+
+    if (!authenticated) {
+      router.replace('/login');
+    } else {
       TransactionService.getAll().then(setTransactions);
     }
-  }, []);
+  }, [router]);
 
   if (!auth) {
-    router.push('/login');
-    return (
-      <div className="text-center mt-5">
-        <h2>Você precisa estar logado para acessar esta página.</h2>
-      </div>
-    );
+    return null;
   }
 
   const saldo = transactions.reduce(

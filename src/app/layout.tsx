@@ -1,8 +1,7 @@
 import "./globals.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Header } from "@/components/header";
-import ElevateAppBar from "@/components/AppBar/ElevateAppBar";
+import Header from "@/components/header/index";
 
 export const metadata = {
   title: "Projeto Financeiro",
@@ -29,8 +28,8 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ElevateAppBar />
-        <main style={{ marginTop: '64px' }}>{children}</main>
+        <Header />
+        <main>{children}</main>
       </body>
     </html>
   );

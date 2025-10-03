@@ -68,7 +68,10 @@ export default function ElevateAppBar() {
             Transações
           </Button>
           
-          <Button color="inherit">
+          <Button color="inherit" onClick={() => {
+            localStorage.removeItem('authToken');
+            window.location.href = '/login';
+          }}>
             Login
           </Button>
         </Toolbar>

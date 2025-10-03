@@ -7,13 +7,34 @@ import CardSaldo from "@/components/cardSaldo";
 import { MenuCard } from "@/components/menu";
 import { Transaction } from "@/models/Transaction";
 import { TransactionService } from "@/services/TransactionService";
+import { useRouter } from 'next/navigation';
+
+function isAuthenticated() {
+  console.log(localStorage.getItem("authToken"));
+  
+  return !!localStorage.getItem("authToken");
+}
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [auth, setAuth] = useState<boolean>(false);
+  const router = useRouter();
 
   useEffect(() => {
-    TransactionService.getAll().then(setTransactions);
+    setAuth(isAuthenticated());
+    if (isAuthenticated()) {
+      TransactionService.getAll().then(setTransactions);
+    }
   }, []);
+
+  if (!auth) {
+    router.push('/login');
+    return (
+      <div className="text-center mt-5">
+        <h2>Você precisa estar logado para acessar esta página.</h2>
+      </div>
+    );
+  }
 
   const saldo = transactions.reduce(
     (acc, t) => acc + (t.tipo === "DEPOSITO" ? t.valor : -t.valor),

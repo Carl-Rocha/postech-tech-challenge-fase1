@@ -1,36 +1,36 @@
-'use client'
-import styles from './header.module.css'
+"use client";
 
-import React, { useState } from "react";
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import ElevateAppBar from '../AppBar/ElevateAppBar';
 
-import { MenuBar } from "../menu";
+export default function Header() {
+  const pathname = usePathname();
+  
+  // Páginas onde o AppBar não deve aparecer
+  const hiddenPages = ['/login', '/register'];
+  const hasAppBar = !hiddenPages.includes(pathname);
+  
+  // Ajustar margin-top do main baseado na presença do AppBar
+  useEffect(() => {
+    const main = document.querySelector('main');
+    if (main) {
+      main.style.marginTop = hasAppBar ? '64px' : '0';
+    }
+  }, [hasAppBar]);
+  
+  // Se estiver em uma página que deve ocultar o AppBar, não renderiza nada
+  if (!hasAppBar) {
+    return null;
+  }
+  
+  // Caso contrário, renderiza o AppBar normalmente
+  return <ElevateAppBar />;
+}
 
-
-export function Header(){
-    const [showMenu, setShowMenu] = useState(false);
-
-    return(
-        <nav className={`navbar mb-3 ${styles.navbar_custom}`}>
-            <div className="container-fluid justify-content-between">
-                <div>
-                    {typeof window !== "undefined" && window.innerWidth <= 768 && (
-                        <div
-                            className={styles.navbar_menu}
-                            style={{ cursor: "pointer" }}
-                            onClick={() => setShowMenu(true)}
-                        >
-                            <span className={`material-icons ${styles.navbar_menu_icon}`}>menu</span>
-                            {showMenu && (
-                                <MenuBar onClose={() => setShowMenu(false)} />
-                            )}
-                        </div>
-                    )}
-                </div>
-                <div className={styles.navbar_user}>
-                    <span className="me-2">Joana da Silva Oliveira</span>
-                    <span className={`material-icons ${styles.navbar_user_icon}`}>person</span>
-                </div>
-            </div>
-        </nav>
-    )
+// Hook para verificar se o AppBar deve aparecer
+export function useAppBarVisibility() {
+  const pathname = usePathname();
+  const hiddenPages = ['/login', '/register'];
+  return !hiddenPages.includes(pathname);
 }

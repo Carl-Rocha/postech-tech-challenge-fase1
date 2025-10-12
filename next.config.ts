@@ -21,11 +21,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/admin",
-        destination: `${adminZoneBaseUrl}`,
+        destination: `${adminZoneBaseUrl}/admin`,
       },
       {
         source: "/admin/:path*",
-        destination: `${adminZoneBaseUrl}/:path*`,
+        destination: `${adminZoneBaseUrl}/admin/:path*`,
       },
     ];
   },

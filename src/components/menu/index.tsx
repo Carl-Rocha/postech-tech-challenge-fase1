@@ -47,7 +47,7 @@ export function MenuCard() {
                 <Link href="/services" className={styles.menuLink}>Outros Serviços</Link>
             </div>
             <div className={styles.menuItem}>
-                <Link href="/admin" className={styles.menuLink}>
+                <Link href="/admin" prefetch={false} onClick={(e) => { e.preventDefault(); window.location.href = '/admin'; }} className={styles.menuLink}>
                     Administração
                 </Link>
             </div>

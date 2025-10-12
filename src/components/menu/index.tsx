@@ -46,6 +46,11 @@ export function MenuCard() {
             <div className={styles.menuItem}>
                 <Link href="/services" className={styles.menuLink}>Outros Serviços</Link>
             </div>
+            <div className={styles.menuItem}>
+                <Link href="/admin" className={styles.menuLink}>
+                    Administração
+                </Link>
+            </div>
         </div>
     );
 }

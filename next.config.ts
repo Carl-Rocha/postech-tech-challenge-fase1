@@ -27,18 +27,6 @@ const nextConfig: NextConfig = {
         source: "/admin/:path*",
         destination: `${adminZoneBaseUrl}/:path*`,
       },
-      {
-        source: "/_next/static/chunks/zones_admin_:path*",
-        destination: `${adminZoneBaseUrl}/_next/static/chunks/:path*`,
-      },
-      {
-        source: "/_next/static/css/zones_admin_:path*",
-        destination: `${adminZoneBaseUrl}/_next/static/css/:path*`,
-      },
-      {
-        source: "/_next/data/zones_admin/:path*",
-        destination: `${adminZoneBaseUrl}/_next/data/:path*`,
-      },
     ];
   },
 };

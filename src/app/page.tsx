@@ -7,6 +7,7 @@ import CardSaldo from "../components/cardSaldo";
 import { MenuCard } from "../components/menu";
 import { Transaction } from "@/models/Transaction";
 import { TransactionService } from "@/services/TransactionService";
+import Dashboard from "../components/investments/dashboard/dashboard";
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -53,6 +54,9 @@ export default function Home() {
           <NewTransaction onSubmit={handleNewTransaction} />
         </div>
       </div>
+      <div className="col-md-12 mt-4 mb-4">
+        <Dashboard />
+      </div>
       <div className="col-md-4">
         <CardExtrato
           extrato={transactions.map((t) => ({
@@ -64,6 +68,7 @@ export default function Home() {
           onDelete={handleDelete}
         />
       </div>
+ 
     </div>
   );
 }

@@ -138,7 +138,7 @@ export default function Header() {
                   window.location.href = '/login';
                 }}
               >
-                <ListItemText primary="Logout" />
+                <ListItemText primary="Sair" />
               </ListItemButton>
             </ListItem>
           </List>

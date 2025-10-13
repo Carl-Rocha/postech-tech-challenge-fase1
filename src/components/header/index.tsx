@@ -39,6 +39,7 @@ export default function Header() {
   const pathname = usePathname();
   const hiddenPages = ['/login', '/register'];
   const hasAppBar = !hiddenPages.includes(pathname);
+  const showLoginButton = pathname === '/transactions';
 
   // Ajusta margin-top do main conforme presença do AppBar
   useEffect(() => {
@@ -94,13 +95,16 @@ export default function Header() {
             >
               Bytebank
             </Typography>
-            
-              <Button color="inherit" onClick={() => {
-                localStorage.removeItem('authToken');
-                window.location.href = '/login';
-              }}>
-                Login
-              </Button>
+            {
+              !showLoginButton && (
+                <Button color="inherit" onClick={() => {
+                  localStorage.removeItem('authToken');
+                  window.location.href = '/login';
+                }}>
+                  Login
+                </Button>
+              )
+            }
           </Toolbar>
         </AppBar>
       </HideOnScroll>
@@ -125,6 +129,16 @@ export default function Header() {
             <ListItem disablePadding>
               <ListItemButton>
                 <ListItemText primary="Investimentos" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={() => {
+                  localStorage.removeItem('authToken');
+                  window.location.href = '/login';
+                }}
+              >
+                <ListItemText primary="Logout" />
               </ListItemButton>
             </ListItem>
           </List>

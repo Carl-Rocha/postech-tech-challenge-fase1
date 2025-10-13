@@ -16,6 +16,7 @@ export interface IExtrato {
   valor: number;
   data: string;
   tipo: 'TRANSFERENCIA' | 'DEPOSITO';
+  comprovanteBase64?: string;
 }
 
 interface IExtratoComDataPtBr extends IExtrato {
@@ -60,44 +61,8 @@ interface CardExtratoProps {
   pageSize?: number;
 }
 
-export default function CardExtrato({ extrato, onDelete, onEdit, pageSize = 10 }: CardExtratoProps) {
+export default function CardExtrato({ extrato, onDelete, onEdit }: CardExtratoProps) {
   const listaExtrato = ordenarExtartoMes(extrato) ?? [];
-  const [visibleCount, setVisibleCount] = useState(pageSize);
-  const loaderRef = useRef<HTMLDivElement | null>(null);
-
-  const [openFilterModal, setOpenFilterModal] = useState(false);
-
-  const allExtratos = listaExtrato.flatMap(mes => mes.extratos);
-
-  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
-    const target = entries[0];
-    if (target.isIntersecting) {
-      setVisibleCount((prev) => Math.min(prev + pageSize, allExtratos.length));
-    }
-  }, [allExtratos.length, pageSize]);
-
-  useEffect(() => {
-    const option = {
-      root: null,
-      rootMargin: "20px",
-      threshold: 1.0
-    };
-    const observer = new IntersectionObserver(handleObserver, option);
-    if (loaderRef.current) observer.observe(loaderRef.current);
-    return () => {
-      if (loaderRef.current) observer.unobserve(loaderRef.current);
-    };
-  }, [handleObserver]);
-
-  // Agrupa os extratos visíveis por mês novamente
-  const visibleExtratos = allExtratos.slice(0, visibleCount);
-  const visibleExtratoMes = ordenarExtartoMes(visibleExtratos);
-
-  // Função de filtro (exemplo)
-  const handleFilter = (filters: { tipo?: string; dataInicio?: string; dataFim?: string }) => {
-    // Implemente a lógica de filtro conforme necessário
-    // Exemplo: console.log(filters);
-  };
 
   return (
     <Card>
@@ -106,7 +71,7 @@ export default function CardExtrato({ extrato, onDelete, onEdit, pageSize = 10 }
       </Typography>
       <Box sx={{ mb: 2, maxHeight: 500, overflowY: 'auto' }}>
         <Stack spacing={2}>
-          {visibleExtratoMes.map((extratoMes, idx) => (
+          {listaExtrato.map((extratoMes, idx) => (
             <Box key={extratoMes.mesExtrato + idx} sx={{ mb: 2 }}>
               <Stack spacing={1}>
                 {extratoMes.extratos.map((extrato, i) => (
@@ -131,6 +96,29 @@ export default function CardExtrato({ extrato, onDelete, onEdit, pageSize = 10 }
                         {extrato.tipo === 'DEPOSITO' ? 'R$ ' : '- R$ '}
                         {extrato.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </span>
+                      {extrato.comprovanteBase64 && (
+                        <Box sx={{ mt: 1 }}>
+                          <a
+                            href={extrato.comprovanteBase64}
+                            download={`comprovante-${extrato.id}.png`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <img
+                              src={extrato.comprovanteBase64}
+                              alt="Comprovante"
+                              style={{
+                                width: 48,
+                                height: 48,
+                                objectFit: "cover",
+                                borderRadius: 4,
+                                border: "1px solid #ccc",
+                                cursor: "pointer"
+                              }}
+                            />
+                          </a>
+                        </Box>
+                      )}
                     </Box>
                     <Box>
                       {onEdit && (
@@ -160,12 +148,6 @@ export default function CardExtrato({ extrato, onDelete, onEdit, pageSize = 10 }
             </Box>
           ))}
         </Stack>
-        <div ref={loaderRef} />
-        {visibleCount < allExtratos.length && (
-          <Typography align="center" variant="body2" sx={{ mt: 2 }}>
-            Carregando mais...
-          </Typography>
-        )}
       </Box>
     </Card>
   );

@@ -10,9 +10,9 @@ export class TransactionService {
       throw new Error('Erro ao buscar transações');
     }
     const data = await res.json();
-    type TransactionDTO = { id: number; tipo: string; valor: number; data: string };
+    type TransactionDTO = { id: number; tipo: string; valor: number; data: string, comprovanteBase64?: string  };
     return (data.transacao || []).map(
-      (t: TransactionDTO) => new Transaction({ id: t.id, tipo: t.tipo, valor: t.valor, data: t.data })
+      (t: TransactionDTO) => new Transaction({ id: t.id, tipo: t.tipo, valor: t.valor, data: t.data, comprovanteBase64: t.comprovanteBase64 })
     );
   }
 
@@ -25,7 +25,7 @@ export class TransactionService {
       return JSON.parse(stored);
     }
     const initial = await this.fetchFromApi();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));    
     return initial;
   }
 
@@ -41,6 +41,8 @@ export class TransactionService {
   }
 
   static async update(transaction: Transaction): Promise<void> {
+    console.log(transaction);
+    
     const all = await this.getAll();
     const index = all.findIndex((t) => t.id === transaction.id);
     if (index !== -1) {

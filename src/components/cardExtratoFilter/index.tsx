@@ -1,11 +1,15 @@
-import { Card, CardContent, TextField, MenuItem, Button, Stack } from "@mui/material";
+import { Typography, Card } from "@/design-system";
+import { CardContent, TextField, MenuItem, Button, Stack } from "@mui/material";
 
-export default function ExtratoFilterCard({ filter, setFilter }: {
+export default function CardExtratoFilter({ filter, setFilter }: {
   filter: { tipo?: string; dataInicio?: string; dataFim?: string };
   setFilter: (f: any) => void;
 }) {
   return (
     <Card>
+      <Typography variant="heading" style={{marginBottom: '0' }}>
+        Filtro
+      </Typography>
       <CardContent>
         <Stack spacing={2}>
           <TextField

@@ -4,14 +4,14 @@ import React, { useMemo, useState } from "react";
 import styles from "./newTransaction.module.css";
 import CustomDropdown from "../custonDropdown";
 import { Button, Input, Typography, Modal } from "@/design-system";
+import { TransactionService } from "@/services/TransactionService";
+import { Transaction } from "@/models/Transaction";
 
-type TipoTransacao = "DEPOSITO" | "TRANSFERENCIA" | "DOC" | "PIX";
+type TipoTransacao = "DEPOSITO" | "TRANSFERENCIA";
 
 const transactionOptions = [
   { value: "DEPOSITO", label: "Depósito" },
-  { value: "TRANSFERENCIA", label: "Transferência" },
-  { value: "DOC", label: "DOC" },
-  { value: "PIX", label: "PIX" },
+  { value: "TRANSFERENCIA", label: "Transferência" }
 ] as const;
 
 //adicionado regras de dinehiro Brasil
@@ -33,17 +33,19 @@ class Dinheiro {
 class NewTransactionVM {
   tipo: TipoTransacao | "" = "";
   valorTexto = "";
+  comprovanteBase64?: string;
 
-  constructor(init?: { type?: string; amount?: string }) {
+  constructor(init?: { type?: string; amount?: string; comprovanteBase64?: string }) {
     if (
       init?.type &&
-      (["DEPOSITO", "TRANSFERENCIA", "DOC", "PIX"] as const).includes(
+      (["DEPOSITO", "TRANSFERENCIA"] as const).includes(
         init.type as any
       )
     ) {
       this.tipo = init.type as TipoTransacao;
     }
     if (init?.amount) this.valorTexto = init.amount;
+    if (init?.comprovanteBase64) this.comprovanteBase64 = init.comprovanteBase64;
   }
 
   setTipo(novo: string) {
@@ -52,6 +54,10 @@ class NewTransactionVM {
   }
   setValorTexto(novo: string) {
     this.valorTexto = novo;
+    return this;
+  }
+  setComprovanteBase64(novo?: string) {
+    this.comprovanteBase64 = novo;
     return this;
   }
   get valorNumero(): number {
@@ -64,17 +70,17 @@ class NewTransactionVM {
       this.valorNumero >= 0.01
     );
   }
-  toDTO(): { type: string; amount: string } {
-    return { type: this.tipo, amount: this.valorTexto };
+  toDTO(): { type: string; amount: string; comprovanteBase64?: string } {
+    return { type: this.tipo, amount: this.valorTexto, comprovanteBase64: this.comprovanteBase64 };
   }
 }
 
 interface NewTransactionProps {
   isOpen: boolean;
   onClose: () => void;
-  initial?: { type: string; amount: string };
-  editingTransaction?: { id: string; type: string; amount: string; date: string };
-  onSubmit?: (data: { type: string; amount: string; id?: string }) => void | Promise<void>;
+  initial?: { type: string; amount: string; comprovanteBase64?: string };
+  editingTransaction?: { id: string; type: string; amount: string; date: string; comprovanteBase64?: string };
+  onSubmit?: (data: { type: string; amount: string; id?: string; comprovanteBase64?: string }) => void | Promise<void>;
   disabled?: boolean;
 }
 
@@ -91,13 +97,16 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
   const [vm, setVM] = useState<NewTransactionVM>(initialVM);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [comprovanteBase64, setComprovanteBase64] = useState<string | undefined>(
+    initialData?.comprovanteBase64
+  );
 
-  // Reset form when modal opens/closes or editing transaction changes
   React.useEffect(() => {
     if (isOpen) {
       const newVM = new NewTransactionVM(initialData);
       setVM(newVM);
       setErro(null);
+      setComprovanteBase64(initialData?.comprovanteBase64);
     }
   }, [isOpen, initialData]);
 
@@ -114,6 +123,21 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
     );
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setComprovanteBase64(reader.result as string);
+      setVM(vm => new NewTransactionVM({
+        type: vm.tipo,
+        amount: vm.valorTexto,
+        comprovanteBase64: reader.result as string
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleTransactionSubmit = async () => {
     setErro(null);
     if (!vm.valido) {
@@ -124,11 +148,22 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
       setEnviando(true);
       const submitData = {
         ...vm.toDTO(),
-        id: editingTransaction?.id
+        id: editingTransaction?.id,
+        comprovanteBase64,
       };
       if (onSubmit) await onSubmit(submitData);
       else console.log("Transação a ser concluída:", submitData);
-      onClose(); // Fechar modal após sucesso
+
+      const newTransaction = new Transaction({
+        id: Date.now(),
+        tipo: vm.tipo,
+        valor: vm.valorNumero,
+        data: new Date().toISOString().split("T")[0],
+        comprovanteBase64,
+      });
+      await TransactionService.add(newTransaction);
+
+      onClose();
     } catch {
       setErro("Não foi possível salvar. Tente novamente.");
     } finally {
@@ -177,17 +212,41 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
           )}
         </div>
 
-        <div className="flex gap-3">
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="comprovante"
+          >
+            Comprovante (imagem)
+          </label>
+          <Input
+            id="comprovante"
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            disabled={disabled || enviando}
+            className="w-100 bg-gray-100 border p-2 rounded-lg"
+          />
+          {comprovanteBase64 && (
+            <div className="mt-2">
+              <img
+                src={comprovanteBase64}
+                alt="Comprovante"
+                style={{ maxWidth: "100%", maxHeight: 180, borderRadius: 8 }}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="d-flex justify-content-between">
           <Button
             variant="secondary"
-            className="flex-1"
             onClick={onClose}
             disabled={enviando}
           >
             Cancelar
           </Button>
           <Button
-            className="flex-1"
             onClick={handleTransactionSubmit}
             disabled={disabled || enviando}
           >

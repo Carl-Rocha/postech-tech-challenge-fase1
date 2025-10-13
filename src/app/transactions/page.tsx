@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import NewTransaction from "@/components/newTransaction";
 import CardExtrato from "@/components/cardExtrato";
 import CardSaldo from "@/components/cardSaldo";
-import { MenuCard } from "@/components/menu";
 import { Transaction } from "@/models/Transaction";
 import { TransactionService } from "@/services/TransactionService";
 import { useRouter } from 'next/navigation';
 import { Button } from "@/design-system";
-import ExtratoFilterCard from "@/components/ExtratoFilterCard"; // Crie esse componente
+import ExtratoFilterCard from "@/components/cardExtratoFilter";
 
 function isAuthenticated() {
   console.log(localStorage.getItem("authToken"));
@@ -45,30 +44,33 @@ export default function Transactions() {
     0
   );
 
-  // Função para filtrar os extratos
+  //filtrar os extratos
   const filteredTransactions = transactions.filter((t) => {
     const matchTipo = filter.tipo ? t.tipo === filter.tipo : true;
     const matchInicio = filter.dataInicio ? new Date(t.data) >= new Date(filter.dataInicio) : true;
     const matchFim = filter.dataFim ? new Date(t.data) <= new Date(filter.dataFim) : true;
     return matchTipo && matchInicio && matchFim;
-  });
+  }); 
 
   const handleNewTransaction = async ({
     type,
     amount,
     id,
+    comprovanteBase64,
   }: {
     type: string;
     amount: string;
     id?: string;
+    comprovanteBase64?: string;
   }) => {
     if (id) {
-      // Editar transação existente
+      // editar
       const updatedTransaction = new Transaction({
         id: parseInt(id),
         tipo: type,
         valor: parseFloat(amount),
         data: editingTransaction?.date || new Date().toISOString().split("T")[0],
+        comprovanteBase64
       });
       await TransactionService.update(updatedTransaction);
       setTransactions((prev) => 
@@ -76,12 +78,13 @@ export default function Transactions() {
       );
       setEditingTransaction(null);
     } else {
-      // Criar nova transação
+      // add transacao
       const newTransaction = new Transaction({
         id: Date.now(),
         tipo: type,
         valor: parseFloat(amount),
         data: new Date().toISOString().split("T")[0],
+        comprovanteBase64,
       });
       await TransactionService.add(newTransaction);
       setTransactions((prev) => [...prev, newTransaction]);
@@ -109,9 +112,19 @@ export default function Transactions() {
   };
 
   return (
-    <div className="row justify-content-center gap-3 mt-3">
-      <div className="col-md-6">
+    <div className="d-flex justify-content-center gap-3 mt-3">
+      <div className="col-md-4">
         <CardSaldo nomeCliente="Joana" saldoTotal={saldo} />
+          <Button 
+              onClick={() => {
+                setEditingTransaction(null);
+                setIsNewTransactionModalOpen(true);
+              }}
+              className="w-100"
+              style={{ marginTop: '1rem' }}
+            >
+              Nova Transação
+          </Button>
         <div className="mt-3">
           <CardExtrato
             extrato={filteredTransactions.map((t) => ({
@@ -119,6 +132,7 @@ export default function Transactions() {
               valor: t.valor,
               data: t.data,
               tipo: t.tipo as "TRANSFERENCIA" | "DEPOSITO",
+              comprovanteBase64: t.comprovanteBase64,
             }))}
             onDelete={(id) => handleDelete(parseInt(id))}
             onEdit={handleEditTransaction}
@@ -126,15 +140,6 @@ export default function Transactions() {
         </div>
       </div>
       <div className="col-md-4">
-        <Button 
-            onClick={() => {
-              setEditingTransaction(null);
-              setIsNewTransactionModalOpen(true);
-            }}
-            className="w-100"
-          >
-            Nova Transação
-        </Button>
         <ExtratoFilterCard
           filter={filter}
           setFilter={setFilter}

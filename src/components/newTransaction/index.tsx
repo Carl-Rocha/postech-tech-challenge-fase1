@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import styles from "./newTransaction.module.css";
 import CustomDropdown from "../custonDropdown";
-import { Button, Input, Typography } from "@/design-system";
+import { Button, Input, Typography, Modal } from "@/design-system";
 
 type TipoTransacao = "DEPOSITO" | "TRANSFERENCIA" | "DOC" | "PIX";
 
@@ -70,20 +70,36 @@ class NewTransactionVM {
 }
 
 interface NewTransactionProps {
+  isOpen: boolean;
+  onClose: () => void;
   initial?: { type: string; amount: string };
-  onSubmit?: (data: { type: string; amount: string }) => void | Promise<void>;
+  editingTransaction?: { id: string; type: string; amount: string; date: string };
+  onSubmit?: (data: { type: string; amount: string; id?: string }) => void | Promise<void>;
   disabled?: boolean;
 }
 
 const NewTransaction: React.FC<NewTransactionProps> = ({
+  isOpen,
+  onClose,
   initial,
+  editingTransaction,
   onSubmit,
   disabled = false,
 }) => {
-  const initialVM = useMemo(() => new NewTransactionVM(initial), [initial]);
+  const initialData = editingTransaction || initial;
+  const initialVM = useMemo(() => new NewTransactionVM(initialData), [initialData]);
   const [vm, setVM] = useState<NewTransactionVM>(initialVM);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+
+  // Reset form when modal opens/closes or editing transaction changes
+  React.useEffect(() => {
+    if (isOpen) {
+      const newVM = new NewTransactionVM(initialData);
+      setVM(newVM);
+      setErro(null);
+    }
+  }, [isOpen, initialData]);
 
   const handleTransactionSelect = (value: string) => {
     setVM(new NewTransactionVM({ type: value, amount: vm.valorTexto }));
@@ -106,8 +122,13 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
     }
     try {
       setEnviando(true);
-      if (onSubmit) await onSubmit(vm.toDTO());
-      else console.log("Transação a ser concluída:", vm.toDTO());
+      const submitData = {
+        ...vm.toDTO(),
+        id: editingTransaction?.id
+      };
+      if (onSubmit) await onSubmit(submitData);
+      else console.log("Transação a ser concluída:", submitData);
+      onClose(); // Fechar modal após sucesso
     } catch {
       setErro("Não foi possível salvar. Tente novamente.");
     } finally {
@@ -115,15 +136,12 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
     }
   };
 
-  return (
-    <div>
-      <div
-        className={`${styles.newTransaction} bg-white p-8 rounded-lg shadow-lg flex-1 mt-6`}
-      >
-        <Typography as="h3" variant="heading" className="mb-6 text-gray-800">
-          Nova transação
-        </Typography>
+  const modalTitle = editingTransaction ? "Editar transação" : "Nova transação";
+  const buttonText = editingTransaction ? "Salvar alterações" : "Concluir transação";
 
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle}>
+      <div className={styles.newTransaction}>
         <div className="mb-4">
           <CustomDropdown
             items={transactionOptions as any}
@@ -159,15 +177,25 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
           )}
         </div>
 
-        <Button
-          className="w-100 mt-4"
-          onClick={handleTransactionSubmit}
-          disabled={disabled || enviando}
-        >
-          {enviando ? "Salvando…" : "Concluir transação"}
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={onClose}
+            disabled={enviando}
+          >
+            Cancelar
+          </Button>
+          <Button
+            className="flex-1"
+            onClick={handleTransactionSubmit}
+            disabled={disabled || enviando}
+          >
+            {enviando ? "Salvando…" : buttonText}
+          </Button>
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

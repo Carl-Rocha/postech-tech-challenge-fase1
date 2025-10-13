@@ -29,7 +29,7 @@ export default function RootLayout({
       </head>
       <body>
         <Header />
-        <main>{children}</main>
+        <main style={{ marginTop: "100px" }}>{children}</main>
       </body>
     </html>
   );

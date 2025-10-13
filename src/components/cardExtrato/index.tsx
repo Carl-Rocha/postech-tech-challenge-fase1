@@ -1,8 +1,18 @@
-import Link from 'next/link';
-import styles from './cardExtrato.module.css'
+import {
+  IconButton,
+  Divider,
+  Box,
+  Chip,
+  Stack,
+  Modal,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useRef, useState, useEffect, useCallback } from 'react';
+import { Button, Card, Typography } from '@/design-system';
 
 export interface IExtrato {
-  id: number;
+  id: string;
   valor: number;
   data: string;
   tipo: 'TRANSFERENCIA' | 'DEPOSITO';
@@ -45,50 +55,118 @@ function ordenarExtartoMes(extrato: Array<IExtrato>): IExtratoMes[] {
 
 interface CardExtratoProps {
   extrato: Array<IExtrato>;
-  onDelete?: (id: number) => void;
+  onDelete?: (id: string) => void;
+  onEdit?: (transaction: IExtrato) => void;
+  pageSize?: number;
 }
 
-export default function CardExtrato({ extrato, onDelete }: CardExtratoProps) {
+export default function CardExtrato({ extrato, onDelete, onEdit, pageSize = 10 }: CardExtratoProps) {
   const listaExtrato = ordenarExtartoMes(extrato) ?? [];
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+
+  const [openFilterModal, setOpenFilterModal] = useState(false);
+
+  const allExtratos = listaExtrato.flatMap(mes => mes.extratos);
+
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const target = entries[0];
+    if (target.isIntersecting) {
+      setVisibleCount((prev) => Math.min(prev + pageSize, allExtratos.length));
+    }
+  }, [allExtratos.length, pageSize]);
+
+  useEffect(() => {
+    const option = {
+      root: null,
+      rootMargin: "20px",
+      threshold: 1.0
+    };
+    const observer = new IntersectionObserver(handleObserver, option);
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => {
+      if (loaderRef.current) observer.unobserve(loaderRef.current);
+    };
+  }, [handleObserver]);
+
+  // Agrupa os extratos visíveis por mês novamente
+  const visibleExtratos = allExtratos.slice(0, visibleCount);
+  const visibleExtratoMes = ordenarExtartoMes(visibleExtratos);
+
+  // Função de filtro (exemplo)
+  const handleFilter = (filters: { tipo?: string; dataInicio?: string; dataFim?: string }) => {
+    // Implemente a lógica de filtro conforme necessário
+    // Exemplo: console.log(filters);
+  };
+
   return (
-    <div className={styles.card}>
-      <div className="d-flex justify-content-between mb-2">
-        <h4>Extrato</h4>
-      </div>
-          {listaExtrato.map((extratoMes: { 
-            mesExtrato: string; extratos: IExtrato[] & { dataPtBr?: string }[] }, idx: number) => (
-            <div className={styles.card_extrato} key={extratoMes.mesExtrato + idx}>
-              <strong>{extratoMes.mesExtrato}</strong>
-                {extratoMes.extratos.map((extrato: IExtrato & { dataPtBr?: string }, i: number) => (
-                    <div className={styles.card_extrato_detalhe} key={extrato.data + i}>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div className={styles.card_extrato_valor}>
-                          <span>{extrato.tipo}</span>
-                          <h6>
-                            {extrato.tipo === 'DEPOSITO' ? 'R$ ' : '- R$ '}
-                            {extrato.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                          </h6>
-                        </div>
-                        <div>
-                          <Link href={`/transactions/${extrato.id}/edit`} className="btn btn-sm rounded-pill me-2" title="Editar">
-                            <span className="material-icons">edit</span>
-                          </Link>
-                          {onDelete && (
-                            <button
-                              className="btn btn-sm rounded-pill"
-                              title="Excluir"
-                              onClick={() => onDelete(extrato.id)}
-                            >
-                              <span className="material-icons">delete</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      <span className='text-secondary'>{extrato.dataPtBr}</span>
-                    </div>
+    <Card>
+      <Typography variant="heading">
+        Extrato
+      </Typography>
+      <Box sx={{ mb: 2, maxHeight: 500, overflowY: 'auto' }}>
+        <Stack spacing={2}>
+          {visibleExtratoMes.map((extratoMes, idx) => (
+            <Box key={extratoMes.mesExtrato + idx} sx={{ mb: 2 }}>
+              <Stack spacing={1}>
+                {extratoMes.extratos.map((extrato, i) => (
+                  <Box
+                    key={extrato.data + i}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      p: 1,
+                      bgcolor: '#f5f5f5',
+                      borderRadius: 1,
+                      boxShadow: 1,
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="body" color="text.secondary" style={{ marginBottom: 1 }}>
+                        {extrato.tipo}
+                      </Typography>
+                      <Typography variant="caption" style={{color: 'grey', marginBottom: 6}}>{extrato.dataPtBr}</Typography>
+                      <span style={{ color: extrato.tipo === 'DEPOSITO' ? 'green' : 'red', fontWeight: 'bold' }}>
+                        {extrato.tipo === 'DEPOSITO' ? 'R$ ' : '- R$ '}
+                        {extrato.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </Box>
+                    <Box>
+                      {onEdit && (
+                        <IconButton 
+                          size="small" 
+                          color="primary" 
+                          title="Editar"
+                          onClick={() => onEdit(extrato)}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                      {onDelete && (
+                        <IconButton
+                          size="small"
+                          color="error"
+                          title="Excluir"
+                          onClick={() => onDelete(extrato.id)}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Box>
+                  </Box>
                 ))}
-            </div>
+              </Stack>
+            </Box>
           ))}
-    </div>
+        </Stack>
+        <div ref={loaderRef} />
+        {visibleCount < allExtratos.length && (
+          <Typography align="center" variant="body2" sx={{ mt: 2 }}>
+            Carregando mais...
+          </Typography>
+        )}
+      </Box>
+    </Card>
   );
 }

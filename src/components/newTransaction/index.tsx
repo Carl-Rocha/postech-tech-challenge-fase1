@@ -138,6 +138,15 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
     reader.readAsDataURL(file);
   };
 
+  const handleRemoveImage = () => {
+    setComprovanteBase64(undefined);
+    setVM(vm => new NewTransactionVM({
+      type: vm.tipo,
+      amount: vm.valorTexto,
+      comprovanteBase64: undefined
+    }));
+  };
+
   const handleTransactionSubmit = async () => {
     setErro(null);
     if (!vm.valido) {
@@ -229,11 +238,23 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
           />
           {comprovanteBase64 && (
             <div className="mt-2">
-              <img
-                src={comprovanteBase64}
-                alt="Comprovante"
-                style={{ maxWidth: "100%", maxHeight: 180, borderRadius: 8 }}
-              />
+              <div className="position-relative d-inline-block">
+                <img
+                  src={comprovanteBase64}
+                  alt="Comprovante"
+                  style={{ maxWidth: "100%", maxHeight: 180, borderRadius: 8 }}
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="btn btn-danger btn-sm position-absolute"
+                  style={{ top: 5, right: 5 }}
+                  disabled={disabled || enviando}
+                  title="Remover imagem"
+                >
+                  ×
+                </button>
+              </div>
             </div>
           )}
         </div>

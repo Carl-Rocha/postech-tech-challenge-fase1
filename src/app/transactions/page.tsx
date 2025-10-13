@@ -20,7 +20,7 @@ export default function Transactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [auth, setAuth] = useState<boolean>(false);
   const [isNewTransactionModalOpen, setIsNewTransactionModalOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<{ id: string; type: string; amount: string; date: string } | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<{ id: string; type: string; amount: string; date: string, comprovanteBase64?: string } | null>(null);
   const [filter, setFilter] = useState<{ tipo?: string; dataInicio?: string; dataFim?: string }>({});
   const router = useRouter();
 
@@ -96,12 +96,13 @@ export default function Transactions() {
     setTransactions((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const handleEditTransaction = (transaction: { id: string; valor: number; data: string; tipo: string }) => {
+  const handleEditTransaction = (transaction: { id: string; valor: number; data: string; tipo: string; comprovanteBase64?: string }) => {
     setEditingTransaction({
       id: transaction.id,
       type: transaction.tipo,
       amount: transaction.valor.toString(),
-      date: transaction.data
+      date: transaction.data,
+      comprovanteBase64: transaction.comprovanteBase64
     });
     setIsNewTransactionModalOpen(true);
   };

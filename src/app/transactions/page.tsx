@@ -1,17 +1,61 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Transaction } from '@/models/Transaction';
-import { TransactionService } from '@/services/TransactionService';
-import { Button, Card, Typography } from '@/design-system';
+import { useEffect, useState } from "react";
+import NewTransaction from "@/components/newTransaction";
+import CardExtrato from "@/components/cardExtrato";
+import CardSaldo from "@/components/cardSaldo";
+import { MenuCard } from "@/components/menu";
+import { Transaction } from "@/models/Transaction";
+import { TransactionService } from "@/services/TransactionService";
+import { useRouter } from 'next/navigation';
 
-export default function TransactionsPage() {
+function isAuthenticated() {
+  console.log(localStorage.getItem("authToken"));
+  
+  return !!localStorage.getItem("authToken");
+}
+
+export default function Transactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [auth, setAuth] = useState<boolean>(false);
+  const router = useRouter();
 
   useEffect(() => {
-    TransactionService.getAll().then(setTransactions);
-  }, []);
+    const authenticated = isAuthenticated();
+    setAuth(authenticated);
+
+    if (!authenticated) {
+      router.replace('/login');
+    } else {
+      TransactionService.getAll().then(setTransactions);
+    }
+  }, [router]);
+
+  if (!auth) {
+    return null;
+  }
+
+  const saldo = transactions.reduce(
+    (acc, t) => acc + (t.tipo === "DEPOSITO" ? t.valor : -t.valor),
+    0
+  );
+
+  const handleNewTransaction = async ({
+    type,
+    amount,
+  }: {
+    type: string;
+    amount: string;
+  }) => {
+    const newTransaction = new Transaction({
+      id: Date.now(),
+      tipo: type,
+      valor: parseFloat(amount),
+      data: new Date().toISOString().split("T")[0],
+    });
+    await TransactionService.add(newTransaction);
+    setTransactions((prev) => [...prev, newTransaction]);
+  };
 
   const handleDelete = async (id: number) => {
     await TransactionService.remove(id);
@@ -19,35 +63,27 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="mt-4">
-      <Link href="/">
-        <Button variant="secondary" className="mb-3">
-          Voltar
-        </Button>
-      </Link>
-      <Typography as="h1" variant="heading" className="mb-4">
-        Transações
-      </Typography>
-      {transactions.map((t) => (
-        <Card key={t.id} className="mb-3 p-3 d-flex justify-content-between align-items-center">
-          <div>
-            <Typography className="fw-bold">{t.tipo}</Typography>
-            <Typography className="text-muted">{t.data}</Typography>
-            <Typography>R$ {t.valor.toFixed(2)}</Typography>
-          </div>
-          <div className="d-flex gap-2">
-            <Link href={`/transactions/${t.id}/edit`}>
-              <Button variant="secondary">Editar</Button>
-            </Link>
-            <Button variant="danger" onClick={() => handleDelete(t.id)}>
-              Excluir
-            </Button>
-          </div>
-        </Card>
-      ))}
-      <Link href="/transactions/new">
-        <Button className="mt-3">Nova transação</Button>
-      </Link>
+    <div className="d-flex flex-column flex-md-row gap-3 mt-3">
+      <div className="col-md-2">
+        <MenuCard />
+      </div>
+      <div className="col-md-6">
+        <CardSaldo nomeCliente="Joana" saldoTotal={saldo} />
+        <div className="mt-3">
+          <NewTransaction onSubmit={handleNewTransaction} />
+        </div>
+      </div>
+      <div className="col-md-4">
+        <CardExtrato
+          extrato={transactions.map((t) => ({
+            id: t.id,
+            valor: t.valor,
+            data: t.data,
+            tipo: t.tipo as "TRANSFERENCIA" | "DEPOSITO",
+          }))}
+          onDelete={handleDelete}
+        />
+      </div>
     </div>
   );
 }

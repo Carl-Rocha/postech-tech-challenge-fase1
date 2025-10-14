@@ -204,9 +204,10 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
           </label>
           <div className="flex items-center">
             <Input
+              placeholder="00,00"
+              required
               id="valor"
-              type="text"
-              placeholder="0,00"
+              type="number"
               value={vm.valorTexto}
               onChange={handleAmountChange}
               disabled={disabled || enviando}

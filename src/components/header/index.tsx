@@ -40,21 +40,23 @@ export default function Header() {
   const hiddenPages = ['/login', '/register'];
   const hasAppBar = !hiddenPages.includes(pathname);
   const showLoginButton = pathname === '/transactions';
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Garantir que só executa no cliente
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Ajusta margin-top do main conforme presença do AppBar
   useEffect(() => {
+    if (!isClient) return;
+    
     const main = document.querySelector('main');
     if (main) {
       main.style.marginTop = hasAppBar ? '64px' : '0';
     }
-  }, [hasAppBar]);
-
-  useEffect(() => {
-    // Só roda no cliente
-    const token = localStorage.getItem('authToken');
-  }, []);
-
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  }, [hasAppBar, isClient]);
 
   const handleDrawerOpen = () => setDrawerOpen(true);
   const handleDrawerClose = () => setDrawerOpen(false);
@@ -96,10 +98,12 @@ export default function Header() {
               Bytebank
             </Typography>
             {
-              !showLoginButton && (
+              !showLoginButton && isClient && (
                 <Button color="inherit" onClick={() => {
-                  localStorage.removeItem('authToken');
-                  window.location.href = '/login';
+                  if (typeof window !== 'undefined') {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login';
+                  }
                 }}>
                   Login
                 </Button>
@@ -134,8 +138,10 @@ export default function Header() {
             <ListItem disablePadding>
               <ListItemButton
                 onClick={() => {
-                  localStorage.removeItem('authToken');
-                  window.location.href = '/login';
+                  if (typeof window !== 'undefined') {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login';
+                  }
                 }}
               >
                 <ListItemText primary="Sair" />

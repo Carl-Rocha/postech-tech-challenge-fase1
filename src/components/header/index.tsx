@@ -63,7 +63,7 @@ export default function Header() {
   }
 
   const hasAppBar = !hiddenPages.includes(pathname);
-  const showLoginButton = pathname === '/transactions';
+  const showLoginButton = pathname === '/transactions' || pathname === '/dashboard';
 
   if (!hasAppBar) {
     return null;
@@ -121,23 +121,13 @@ export default function Header() {
         <Box sx={{ width: 250 }} role="presentation" onClick={handleDrawerClose}>
           <List>
             <ListItem disablePadding>
-              <ListItemButton>
-                <ListItemText primary="Início" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton>
+              <ListItemButton onClick={() => window.location.href = '/transactions'}>
                 <ListItemText primary="Transações" />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <ListItemText primary="Transferencia" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton>
-                <ListItemText primary="Investimentos" />
+              <ListItemButton onClick={() => window.location.href = '/dashboard'}>
+                <ListItemText primary="Dashboard" />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>

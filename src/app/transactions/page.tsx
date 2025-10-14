@@ -9,6 +9,8 @@ import { TransactionService } from "@/services/TransactionService";
 import { useRouter } from 'next/navigation';
 import { Button } from "@/design-system";
 import ExtratoFilterCard from "@/components/cardExtratoFilter";
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { setTransactions, addTransaction, updateTransaction, removeTransaction, TransactionData } from '@/features/transactions/transactionSlice';
 
 function isAuthenticated() {
   console.log(localStorage.getItem("authToken"));
@@ -17,7 +19,8 @@ function isAuthenticated() {
 }
 
 export default function Transactions() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const dispatch = useAppDispatch();
+  const { transactions } = useAppSelector((state) => state.transactions);
   const [auth, setAuth] = useState<boolean>(false);
   const [isNewTransactionModalOpen, setIsNewTransactionModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<{ id: string; type: string; amount: string; date: string, comprovanteBase64?: string } | null>(null);
@@ -31,9 +34,19 @@ export default function Transactions() {
     if (!authenticated) {
       router.replace('/login');
     } else {
-      TransactionService.getAll().then(setTransactions);
+      TransactionService.getAll().then((savedTransactions) => {
+        // Converter instâncias da classe Transaction para objetos simples
+        const serializableTransactions: TransactionData[] = savedTransactions.map(t => ({
+          id: t.id,
+          tipo: t.tipo,
+          valor: t.valor,
+          data: t.data,
+          comprovanteBase64: t.comprovanteBase64
+        }));
+        dispatch(setTransactions(serializableTransactions));
+      });
     }
-  }, [router]);
+  }, [router, dispatch]);
 
   if (!auth) {
     return null;
@@ -73,9 +86,15 @@ export default function Transactions() {
         comprovanteBase64
       });
       await TransactionService.update(updatedTransaction);
-      setTransactions((prev) => 
-        prev.map((t) => t.id === parseInt(id) ? updatedTransaction : t)
-      );
+      // Converter para formato serializável
+      const serializableTransaction: TransactionData = {
+        id: updatedTransaction.id,
+        tipo: updatedTransaction.tipo,
+        valor: updatedTransaction.valor,
+        data: updatedTransaction.data,
+        comprovanteBase64: updatedTransaction.comprovanteBase64
+      };
+      dispatch(updateTransaction(serializableTransaction));
       setEditingTransaction(null);
     } else {
       // add transacao
@@ -87,13 +106,21 @@ export default function Transactions() {
         comprovanteBase64,
       });
       await TransactionService.add(newTransaction);
-      setTransactions((prev) => [...prev, newTransaction]);
+      // Converter para formato serializável
+      const serializableTransaction: TransactionData = {
+        id: newTransaction.id,
+        tipo: newTransaction.tipo,
+        valor: newTransaction.valor,
+        data: newTransaction.data,
+        comprovanteBase64: newTransaction.comprovanteBase64
+      };
+      dispatch(addTransaction(serializableTransaction));
     }
   };
 
   const handleDelete = async (id: number) => {
     await TransactionService.remove(id);
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    dispatch(removeTransaction(id));
   };
 
   const handleEditTransaction = (transaction: { id: string; valor: number; data: string; tipo: string; comprovanteBase64?: string }) => {

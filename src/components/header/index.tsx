@@ -20,7 +20,6 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 
-// Componente para esconder AppBar ao rolar
 function HideOnScroll(props: { children: React.ReactElement; window?: () => Window }) {
   const { children, window } = props;
   const trigger = useScrollTrigger({
@@ -34,32 +33,37 @@ function HideOnScroll(props: { children: React.ReactElement; window?: () => Wind
   );
 }
 
-// Componente principal Header + AppBar
 export default function Header() {
   const pathname = usePathname();
   const hiddenPages = ['/login', '/register'];
-  const hasAppBar = !hiddenPages.includes(pathname);
-  const showLoginButton = pathname === '/transactions';
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Garantir que só executa no cliente
   useEffect(() => {
     setIsClient(true);
+    setMounted(true);
   }, []);
 
-  // Ajusta margin-top do main conforme presença do AppBar
   useEffect(() => {
-    if (!isClient) return;
+    if (!mounted) return;
     
+    const hasAppBar = !hiddenPages.includes(pathname);
     const main = document.querySelector('main');
     if (main) {
       main.style.marginTop = hasAppBar ? '64px' : '0';
     }
-  }, [hasAppBar, isClient]);
+  }, [pathname, mounted]);
 
   const handleDrawerOpen = () => setDrawerOpen(true);
   const handleDrawerClose = () => setDrawerOpen(false);
+
+  if (!mounted) {
+    return null;
+  }
+
+  const hasAppBar = !hiddenPages.includes(pathname);
+  const showLoginButton = pathname === '/transactions';
 
   if (!hasAppBar) {
     return null;
@@ -77,17 +81,18 @@ export default function Header() {
           }}
         >
           <Toolbar>
-            <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              sx={{ mr: 2 }}
-              onClick={handleDrawerOpen}
-            >
-              <MenuIcon />
-            </IconButton>
-            
+            {showLoginButton && (
+              <IconButton
+                size="large"
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                sx={{ mr: 2 }}
+                onClick={handleDrawerOpen}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
             <AccountBalanceWalletIcon sx={{ mr: 1 }} />
             
             <Typography 
@@ -98,7 +103,7 @@ export default function Header() {
               Bytebank
             </Typography>
             {
-              !showLoginButton && isClient && (
+              !showLoginButton && (
                 <Button color="inherit" onClick={() => {
                   if (typeof window !== 'undefined') {
                     localStorage.removeItem('authToken');

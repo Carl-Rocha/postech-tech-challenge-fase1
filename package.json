@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "dev:admin": "cd zones/admin && next dev --turbopack -p 3001",
+    "build:admin": "cd zones/admin && next build",
+    "start:admin": "cd zones/admin && next start -p 3001"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

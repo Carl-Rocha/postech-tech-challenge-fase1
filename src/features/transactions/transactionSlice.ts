@@ -5,6 +5,7 @@ export interface TransactionData {
   tipo: string;
   valor: number;
   data: string;
+  categoria?: string;
   comprovanteBase64?: string;
 }
 

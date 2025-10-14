@@ -6,6 +6,7 @@ import CustomDropdown from "../custonDropdown";
 import { Button, Input, Typography, Modal } from "@/design-system";
 import { TransactionService } from "@/services/TransactionService";
 import { Transaction } from "@/models/Transaction";
+import { Autocomplete, TextField } from "@mui/material";
 
 type TipoTransacao = "DEPOSITO" | "TRANSFERENCIA";
 
@@ -13,6 +14,25 @@ const transactionOptions = [
   { value: "DEPOSITO", label: "Depósito" },
   { value: "TRANSFERENCIA", label: "Transferência" }
 ] as const;
+
+const CATEGORY_SUGGESTIONS: Record<TipoTransacao, string[]> = {
+  DEPOSITO: [
+    "Salário",
+    "Investimentos",
+    "Reembolsos",
+    "Venda de bens",
+    "Outras receitas",
+  ],
+  TRANSFERENCIA: [
+    "Alimentação",
+    "Moradia",
+    "Transporte",
+    "Lazer",
+    "Educação",
+    "Saúde",
+    "Serviços",
+  ],
+};
 
 //adicionado regras de dinehiro Brasil
 class Dinheiro {
@@ -33,9 +53,10 @@ class Dinheiro {
 class NewTransactionVM {
   tipo: TipoTransacao | "" = "";
   valorTexto = "";
+  categoria = "";
   comprovanteBase64?: string;
 
-  constructor(init?: { type?: string; amount?: string; comprovanteBase64?: string }) {
+  constructor(init?: { type?: string; amount?: string; categoria?: string; comprovanteBase64?: string }) {
     if (
       init?.type &&
       (["DEPOSITO", "TRANSFERENCIA"] as const).includes(
@@ -45,7 +66,17 @@ class NewTransactionVM {
       this.tipo = init.type as TipoTransacao;
     }
     if (init?.amount) this.valorTexto = init.amount;
+    if (init?.categoria) this.categoria = init.categoria;
     if (init?.comprovanteBase64) this.comprovanteBase64 = init.comprovanteBase64;
+  }
+
+  copy() {
+    return new NewTransactionVM({
+      type: this.tipo,
+      amount: this.valorTexto,
+      categoria: this.categoria,
+      comprovanteBase64: this.comprovanteBase64,
+    });
   }
 
   setTipo(novo: string) {
@@ -56,6 +87,10 @@ class NewTransactionVM {
     this.valorTexto = novo;
     return this;
   }
+  setCategoria(novo?: string) {
+    this.categoria = novo?.trim() || "";
+    return this;
+  }
   setComprovanteBase64(novo?: string) {
     this.comprovanteBase64 = novo;
     return this;
@@ -63,25 +98,49 @@ class NewTransactionVM {
   get valorNumero(): number {
     return Dinheiro.parseBR(this.valorTexto);
   }
-  get valido(): boolean {
-    return (
-      !!this.tipo &&
-      Number.isFinite(this.valorNumero) &&
-      this.valorNumero >= 0.01
-    );
+  get erro(): string | null {
+    if (!this.tipo) {
+      return "Selecione o tipo da transação.";
+    }
+    const valorLimpo = this.valorTexto.trim();
+    if (!valorLimpo) {
+      return "Informe o valor da transação.";
+    }
+    if (!/^\d{1,9}([,.]\d{0,2})?$/.test(valorLimpo)) {
+      return "Utilize apenas números com até duas casas decimais.";
+    }
+    if (!Number.isFinite(this.valorNumero) || this.valorNumero <= 0) {
+      return "Informe um valor maior que zero.";
+    }
+    if (this.valorNumero > 1_000_000) {
+      return "Valor máximo permitido é R$ 1.000.000,00.";
+    }
+    if (!this.categoria || this.categoria.trim().length < 3) {
+      return "Informe uma categoria com pelo menos 3 caracteres.";
+    }
+    return null;
   }
-  toDTO(): { type: string; amount: string; comprovanteBase64?: string } {
-    return { type: this.tipo, amount: this.valorTexto, comprovanteBase64: this.comprovanteBase64 };
+  get valido(): boolean {
+    return this.erro === null;
+  }
+  toDTO(): { type: string; amount: string; categoria?: string; comprovanteBase64?: string } {
+    return {
+      type: this.tipo,
+      amount: this.valido ? Dinheiro.formatBR(this.valorNumero) : this.valorTexto,
+      categoria: this.categoria,
+      comprovanteBase64: this.comprovanteBase64,
+    };
   }
 }
 
 interface NewTransactionProps {
   isOpen: boolean;
   onClose: () => void;
-  initial?: { type: string; amount: string; comprovanteBase64?: string };
-  editingTransaction?: { id: string; type: string; amount: string; date: string; comprovanteBase64?: string };
-  onSubmit?: (data: { type: string; amount: string; id?: string; comprovanteBase64?: string }) => void | Promise<void>;
+  initial?: { type?: string; amount?: string; categoria?: string; comprovanteBase64?: string };
+  editingTransaction?: { id: string; type: string; amount: string; date: string; categoria?: string; comprovanteBase64?: string };
+  onSubmit?: (data: { type: string; amount: string; categoria?: string; id?: string; comprovanteBase64?: string }) => void | Promise<void>;
   disabled?: boolean;
+  availableCategories?: string[];
 }
 
 const NewTransaction: React.FC<NewTransactionProps> = ({
@@ -91,6 +150,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
   editingTransaction,
   onSubmit,
   disabled = false,
+  availableCategories = [],
 }) => {
   const initialData = editingTransaction || initial;
   const initialVM = useMemo(() => new NewTransactionVM(initialData), [initialData]);
@@ -101,26 +161,64 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
     initialData?.comprovanteBase64
   );
 
+  const categorySuggestions = useMemo(() => {
+    const fromType = vm.tipo ? CATEGORY_SUGGESTIONS[vm.tipo] || [] : Object.values(CATEGORY_SUGGESTIONS).flat();
+    const combined = new Set<string>([...fromType, ...availableCategories]);
+    if (vm.categoria) {
+      combined.add(vm.categoria);
+    }
+    return Array.from(combined).filter(Boolean).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [vm.tipo, vm.categoria, availableCategories]);
+
+  const validationMessage = erro ?? ((vm.tipo || vm.valorTexto || vm.categoria) && !vm.valido ? vm.erro : null);
+  const isSubmitDisabled = disabled || enviando || !vm.valido;
+
   React.useEffect(() => {
     if (isOpen) {
       const newVM = new NewTransactionVM(initialData);
+      if (newVM.tipo && !newVM.categoria) {
+        const suggestions = CATEGORY_SUGGESTIONS[newVM.tipo] || [];
+        if (suggestions.length) {
+          newVM.setCategoria(suggestions[0]);
+        }
+      }
       setVM(newVM);
       setErro(null);
-      setComprovanteBase64(initialData?.comprovanteBase64);
+      setComprovanteBase64(newVM.comprovanteBase64);
     }
   }, [isOpen, initialData]);
 
   const handleTransactionSelect = (value: string) => {
-    setVM(new NewTransactionVM({ type: value, amount: vm.valorTexto }));
+    setVM((prev) => {
+      const next = prev.copy().setTipo(value);
+      const typedValue = value as TipoTransacao;
+      const suggestions = CATEGORY_SUGGESTIONS[typedValue] || [];
+      if (!next.categoria || suggestions.includes(next.categoria)) {
+        next.setCategoria(suggestions[0]);
+      }
+      return next;
+    });
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVM(
-      new NewTransactionVM({
-        type: vm.tipo,
-        amount: vm.valorTexto,
-      }).setValorTexto(e.target.value)
-    );
+    const rawValue = e.target.value;
+    if (/^[0-9.,]*$/.test(rawValue)) {
+      setVM((prev) => prev.copy().setValorTexto(rawValue));
+    }
+  };
+
+  const handleAmountBlur = () => {
+    setVM((prev) => {
+      const clone = prev.copy();
+      if (!clone.valorTexto) {
+        return clone;
+      }
+      const parsed = clone.valorNumero;
+      if (Number.isFinite(parsed) && parsed > 0) {
+        clone.setValorTexto(Dinheiro.formatBR(parsed));
+      }
+      return clone;
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,28 +227,21 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
     const reader = new FileReader();
     reader.onloadend = () => {
       setComprovanteBase64(reader.result as string);
-      setVM(vm => new NewTransactionVM({
-        type: vm.tipo,
-        amount: vm.valorTexto,
-        comprovanteBase64: reader.result as string
-      }));
+      setVM((prev) => prev.copy().setComprovanteBase64(reader.result as string));
     };
     reader.readAsDataURL(file);
   };
 
   const handleRemoveImage = () => {
     setComprovanteBase64(undefined);
-    setVM(vm => new NewTransactionVM({
-      type: vm.tipo,
-      amount: vm.valorTexto,
-      comprovanteBase64: undefined
-    }));
+    setVM((prev) => prev.copy().setComprovanteBase64(undefined));
   };
 
   const handleTransactionSubmit = async () => {
     setErro(null);
-    if (!vm.valido) {
-      setErro("Preencha tipo e um valor válido (ex.: 123,45).");
+    const validationError = vm.erro;
+    if (validationError) {
+      setErro(validationError);
       return;
     }
     try {
@@ -160,17 +251,23 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
         id: editingTransaction?.id,
         comprovanteBase64,
       };
-      if (onSubmit) await onSubmit(submitData);
-      else console.log("Transação a ser concluída:", submitData);
-
-      const newTransaction = new Transaction({
-        id: Date.now(),
-        tipo: vm.tipo,
-        valor: vm.valorNumero,
-        data: new Date().toISOString().split("T")[0],
-        comprovanteBase64,
-      });
-      await TransactionService.add(newTransaction);
+      if (onSubmit) {
+        await onSubmit(submitData);
+      } else {
+        const baseTransaction = new Transaction({
+          id: editingTransaction ? parseInt(editingTransaction.id, 10) : Date.now(),
+          tipo: vm.tipo as TipoTransacao,
+          valor: vm.valorNumero,
+          data: editingTransaction?.date || new Date().toISOString().split("T")[0],
+          categoria: vm.categoria,
+          comprovanteBase64,
+        });
+        if (editingTransaction) {
+          await TransactionService.update(baseTransaction);
+        } else {
+          await TransactionService.add(baseTransaction);
+        }
+      }
 
       onClose();
     } catch {
@@ -207,17 +304,43 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
               placeholder="00,00"
               required
               id="valor"
-              type="number"
+              type="text"
+              inputMode="decimal"
+              pattern="^\\d{1,9}([,.]\\d{0,2})?$"
               value={vm.valorTexto}
               onChange={handleAmountChange}
+              onBlur={handleAmountBlur}
               disabled={disabled || enviando}
               className="w-100 bg-gray-100 border p-3 rounded-lg text-2xl font-bold text-gray-700"
-              aria-invalid={!!erro}
+              aria-invalid={!!validationMessage}
             />
           </div>
-          {erro && (
+        </div>
+
+        <div className="mb-4">
+          <Autocomplete
+            freeSolo
+            options={categorySuggestions}
+            value={vm.categoria}
+            onChange={(_, newValue) => setVM((prev) => prev.copy().setCategoria(newValue || ""))}
+            onInputChange={(_, newInputValue) => setVM((prev) => prev.copy().setCategoria(newInputValue))}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Categoria"
+                placeholder="Digite ou selecione a categoria"
+                InputLabelProps={{ shrink: true }}
+              />
+            )}
+            disabled={disabled || enviando}
+            sx={{ backgroundColor: '#f8f9fa', borderRadius: 1 }}
+          />
+          <Typography variant="caption" className="mt-1 d-block text-muted">
+            Sugestões personalizadas aparecem conforme o tipo selecionado e seu histórico.
+          </Typography>
+          {validationMessage && (
             <Typography as="p" className="mt-2 text-red-600" role="alert">
-              {erro}
+              {validationMessage}
             </Typography>
           )}
         </div>
@@ -270,7 +393,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
           </Button>
           <Button
             onClick={handleTransactionSubmit}
-            disabled={disabled || enviando}
+            disabled={isSubmitDisabled}
           >
             {enviando ? "Salvando…" : buttonText}
           </Button>

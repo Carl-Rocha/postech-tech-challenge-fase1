@@ -1,21 +1,21 @@
 import {
   IconButton,
-  Divider,
   Box,
   Chip,
   Stack,
-  Modal,
+  Typography as MuiTypography,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useRef, useState, useEffect, useCallback } from 'react';
-import { Button, Card, Typography } from '@/design-system';
+import { useRef, useState, useEffect, useMemo } from 'react';
+import { Card, Typography } from '@/design-system';
 
 export interface IExtrato {
   id: string;
   valor: number;
   data: string;
   tipo: 'TRANSFERENCIA' | 'DEPOSITO';
+  categoria?: string;
   comprovanteBase64?: string;
 }
 
@@ -61,15 +61,58 @@ interface CardExtratoProps {
   pageSize?: number;
 }
 
-export default function CardExtrato({ extrato, onDelete, onEdit }: CardExtratoProps) {
-  const listaExtrato = ordenarExtartoMes(extrato) ?? [];
+export default function CardExtrato({ extrato, onDelete, onEdit, pageSize = 10 }: CardExtratoProps) {
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const sortedExtrato = useMemo(
+    () =>
+      [...extrato].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()),
+    [extrato]
+  );
+
+  const visibleExtratos = useMemo(
+    () => sortedExtrato.slice(0, visibleCount),
+    [sortedExtrato, visibleCount]
+  );
+
+  useEffect(() => {
+    setVisibleCount(pageSize);
+  }, [extrato, pageSize]);
+
+  const hasMore = visibleExtratos.length < sortedExtrato.length;
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const sentinel = sentinelRef.current;
+    if (!hasMore || !container || !sentinel) {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + pageSize, sortedExtrato.length));
+        }
+      },
+      {
+        root: container,
+        threshold: 1,
+      }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, pageSize, sortedExtrato.length]);
+
+  const listaExtrato = ordenarExtartoMes(visibleExtratos) ?? [];
 
   return (
     <Card>
       <Typography variant="heading">
         Extrato
       </Typography>
-      <Box sx={{ mb: 2, maxHeight: 500, overflowY: 'auto' }}>
+      <Box sx={{ mb: 2, maxHeight: 500, overflowY: 'auto' }} ref={containerRef}>
         <Stack spacing={2}>
           {listaExtrato.map((extratoMes, idx) => (
             <Box key={extratoMes.mesExtrato + idx} sx={{ mb: 2 }}>
@@ -88,9 +131,22 @@ export default function CardExtrato({ extrato, onDelete, onEdit }: CardExtratoPr
                     }}
                   >
                     <Box>
-                      <Typography variant="body" color="text.secondary" style={{ marginBottom: 1 }}>
-                        {extrato.tipo}
-                      </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                        <Typography variant="body" color="text.secondary">
+                          {extrato.tipo}
+                        </Typography>
+                        {extrato.categoria && (
+                          <Chip
+                            label={extrato.categoria}
+                            size="small"
+                            sx={{
+                              backgroundColor: extrato.tipo === 'DEPOSITO' ? 'rgba(76, 175, 80, 0.12)' : 'rgba(244, 67, 54, 0.12)',
+                              color: extrato.tipo === 'DEPOSITO' ? '#2e7d32' : '#c62828',
+                              fontWeight: 600,
+                            }}
+                          />
+                        )}
+                      </Stack>
                       <Typography variant="caption" style={{color: 'grey', marginBottom: 6}}>{extrato.dataPtBr}</Typography>
                       <span style={{ color: extrato.tipo === 'DEPOSITO' ? 'green' : 'red', fontWeight: 'bold' }}>
                         {extrato.tipo === 'DEPOSITO' ? 'R$ ' : '- R$ '}
@@ -148,7 +204,13 @@ export default function CardExtrato({ extrato, onDelete, onEdit }: CardExtratoPr
             </Box>
           ))}
         </Stack>
+        <div ref={sentinelRef} />
       </Box>
+      <MuiTypography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', pt: 1 }}>
+        {hasMore
+          ? 'Role até o final da lista para carregar mais transações.'
+          : `Exibindo ${visibleExtratos.length} de ${sortedExtrato.length} transações.`}
+      </MuiTypography>
     </Card>
   );
 }

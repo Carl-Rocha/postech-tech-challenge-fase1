@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import NewTransaction from "@/components/newTransaction";
 import CardExtrato from "@/components/cardExtrato";
 import CardSaldo from "@/components/cardSaldo";
@@ -11,6 +11,23 @@ import { Button } from "@/design-system";
 import ExtratoFilterCard from "@/components/cardExtratoFilter";
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { setTransactions, addTransaction, updateTransaction, removeTransaction, TransactionData } from '@/features/transactions/transactionSlice';
+
+type TransactionFilter = {
+  tipo?: string;
+  dataInicio?: string;
+  dataFim?: string;
+  search?: string;
+  categoria?: string;
+  minValor?: string;
+  maxValor?: string;
+};
+
+const parseValor = (valor?: string): number | null => {
+  if (!valor) return null;
+  const normalizado = valor.replace(/\./g, '').replace(',', '.');
+  const parsed = parseFloat(normalizado);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 function isAuthenticated() {
   console.log(localStorage.getItem("authToken"));
@@ -23,8 +40,15 @@ export default function Transactions() {
   const { transactions } = useAppSelector((state) => state.transactions);
   const [auth, setAuth] = useState<boolean>(false);
   const [isNewTransactionModalOpen, setIsNewTransactionModalOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<{ id: string; type: string; amount: string; date: string, comprovanteBase64?: string } | null>(null);
-  const [filter, setFilter] = useState<{ tipo?: string; dataInicio?: string; dataFim?: string }>({});
+  const [editingTransaction, setEditingTransaction] = useState<{
+    id: string;
+    type: string;
+    amount: string;
+    date: string;
+    categoria?: string;
+    comprovanteBase64?: string;
+  } | null>(null);
+  const [filter, setFilter] = useState<TransactionFilter>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -41,6 +65,7 @@ export default function Transactions() {
           tipo: t.tipo,
           valor: t.valor,
           data: t.data,
+          categoria: t.categoria,
           comprovanteBase64: t.comprovanteBase64
         }));
         dispatch(setTransactions(serializableTransactions));
@@ -62,27 +87,50 @@ export default function Transactions() {
     const matchTipo = filter.tipo ? t.tipo === filter.tipo : true;
     const matchInicio = filter.dataInicio ? new Date(t.data) >= new Date(filter.dataInicio) : true;
     const matchFim = filter.dataFim ? new Date(t.data) <= new Date(filter.dataFim) : true;
-    return matchTipo && matchInicio && matchFim;
-  }); 
+    const matchCategoria = filter.categoria
+      ? (t.categoria || '').toLowerCase() === filter.categoria.toLowerCase()
+      : true;
+    const searchTerm = filter.search?.trim().toLowerCase();
+    const matchBusca = searchTerm
+      ? [t.tipo, t.categoria, t.valor.toLocaleString('pt-BR')]
+        .filter(Boolean)
+        .some((field) => field!.toString().toLowerCase().includes(searchTerm))
+      : true;
+    const minValor = parseValor(filter.minValor);
+    const maxValor = parseValor(filter.maxValor);
+    const matchMin = minValor !== null ? t.valor >= minValor : true;
+    const matchMax = maxValor !== null ? t.valor <= maxValor : true;
+
+    return matchTipo && matchInicio && matchFim && matchCategoria && matchBusca && matchMin && matchMax;
+  });
+
+  const availableCategories = useMemo(
+    () => Array.from(new Set(transactions.map((t) => t.categoria).filter((categoria): categoria is string => !!categoria))).sort(),
+    [transactions]
+  );
 
   const handleNewTransaction = async ({
     type,
     amount,
     id,
+    categoria,
     comprovanteBase64,
   }: {
     type: string;
     amount: string;
     id?: string;
+    categoria?: string;
     comprovanteBase64?: string;
   }) => {
+    const parsedAmount = parseValor(amount) ?? 0;
     if (id) {
       // editar
       const updatedTransaction = new Transaction({
         id: parseInt(id),
         tipo: type,
-        valor: parseFloat(amount),
+        valor: parsedAmount,
         data: editingTransaction?.date || new Date().toISOString().split("T")[0],
+        categoria,
         comprovanteBase64
       });
       await TransactionService.update(updatedTransaction);
@@ -92,6 +140,7 @@ export default function Transactions() {
         tipo: updatedTransaction.tipo,
         valor: updatedTransaction.valor,
         data: updatedTransaction.data,
+        categoria: updatedTransaction.categoria,
         comprovanteBase64: updatedTransaction.comprovanteBase64
       };
       dispatch(updateTransaction(serializableTransaction));
@@ -101,8 +150,9 @@ export default function Transactions() {
       const newTransaction = new Transaction({
         id: Date.now(),
         tipo: type,
-        valor: parseFloat(amount),
+        valor: parsedAmount,
         data: new Date().toISOString().split("T")[0],
+        categoria,
         comprovanteBase64,
       });
       await TransactionService.add(newTransaction);
@@ -112,6 +162,7 @@ export default function Transactions() {
         tipo: newTransaction.tipo,
         valor: newTransaction.valor,
         data: newTransaction.data,
+        categoria: newTransaction.categoria,
         comprovanteBase64: newTransaction.comprovanteBase64
       };
       dispatch(addTransaction(serializableTransaction));
@@ -123,12 +174,13 @@ export default function Transactions() {
     dispatch(removeTransaction(id));
   };
 
-  const handleEditTransaction = (transaction: { id: string; valor: number; data: string; tipo: string; comprovanteBase64?: string }) => {
+  const handleEditTransaction = (transaction: { id: string; valor: number; data: string; tipo: string; categoria?: string; comprovanteBase64?: string }) => {
     setEditingTransaction({
       id: transaction.id,
       type: transaction.tipo,
       amount: transaction.valor.toString(),
       date: transaction.data,
+      categoria: transaction.categoria,
       comprovanteBase64: transaction.comprovanteBase64
     });
     setIsNewTransactionModalOpen(true);
@@ -160,10 +212,12 @@ export default function Transactions() {
               valor: t.valor,
               data: t.data,
               tipo: t.tipo as "TRANSFERENCIA" | "DEPOSITO",
+              categoria: t.categoria,
               comprovanteBase64: t.comprovanteBase64,
             }))}
             onDelete={(id) => handleDelete(parseInt(id))}
             onEdit={handleEditTransaction}
+            pageSize={10}
           />
         </div>
       </div>
@@ -171,14 +225,16 @@ export default function Transactions() {
         <ExtratoFilterCard
           filter={filter}
           setFilter={setFilter}
+          availableCategories={availableCategories}
         />
       </div>
-      
+
       <NewTransaction
         isOpen={isNewTransactionModalOpen}
         onClose={handleCloseModal}
         onSubmit={handleNewTransaction}
         editingTransaction={editingTransaction || undefined}
+        availableCategories={availableCategories}
       />
     </div>
   );

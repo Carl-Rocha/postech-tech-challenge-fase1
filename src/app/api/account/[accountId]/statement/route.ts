@@ -29,7 +29,7 @@ function verifyToken(request: NextRequest) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { accountId: string } }
+  context: any
 ) {
   try {
     const decoded = verifyToken(request);
@@ -40,7 +40,7 @@ export async function GET(
       );
     }
 
-    const { accountId } = params;
+    const { accountId } = context?.params ?? {};
 
     // Buscar transações da conta
     const accountTransactions = transactions

@@ -39,7 +39,7 @@ class NewTransactionVM {
     if (
       init?.type &&
       (["DEPOSITO", "TRANSFERENCIA"] as const).includes(
-        init.type as any
+        init.type as TipoTransacao
       )
     ) {
       this.tipo = init.type as TipoTransacao;
@@ -188,7 +188,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
       <div className={styles.newTransaction}>
         <div className="mb-4">
           <CustomDropdown
-            items={transactionOptions as any}
+            items={[...transactionOptions]}
             placeholder="Selecione o tipo de transação"
             onSelect={handleTransactionSelect}
             value={vm.tipo}

@@ -33,11 +33,11 @@ export class TransactionService {
       const parsed: Transaction[] = JSON.parse(stored);
       // Migrate any items that might be missing ids from older data
       let needsFix = false;
-      const fixed = parsed.map((t, i) => {
-        const currentId: any = (t as any).id;
-        if (typeof currentId !== 'number' || Number.isNaN(currentId)) {
+      const fixed: Transaction[] = parsed.map((t, i) => {
+        const hasValidId = typeof t.id === 'number' && Number.isFinite(t.id);
+        if (!hasValidId) {
           needsFix = true;
-          return { ...(t as any), id: i + 1 } as Transaction;
+          return { ...t, id: i + 1 };
         }
         return t;
       });
@@ -77,4 +77,3 @@ export class TransactionService {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
   }
 }
-

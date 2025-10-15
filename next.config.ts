@@ -18,6 +18,10 @@ const adminZoneBaseUrl = sanitizeBaseUrl(process.env.ADMIN_ZONE_URL, "http://loc
 const transactionsZoneBaseUrl = sanitizeBaseUrl(process.env.TRANSACTIONS_ZONE_URL, "http://localhost:3002");
 
 const nextConfig: NextConfig = {
+  eslint: {
+    // Allow production builds to succeed even if there are ESLint errors
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     return [
       {

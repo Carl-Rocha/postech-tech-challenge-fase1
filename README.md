@@ -68,3 +68,27 @@ da zona administrativa antes de iniciar o servidor.
 ```bash
 yarn lint
 ```
+
+## Arquitetura Multi‑Zonas (Admin + Transações)
+
+O app principal (`src/app`) expõe zonas independentes via rewrites:
+
+- Admin: `zones/admin` (basePath `/admin`)
+- Transações: `zones/transactions` (basePath `/transactions`)
+
+Executar tudo em desenvolvimento:
+
+```bash
+# Um comando para todas as apps (principal, transações e admin)
+yarn dev:full
+
+# Ou, separadamente
+yarn dev               # principal (porta 3000)
+yarn dev:transactions  # transações (porta 3002)
+yarn dev:admin         # admin (porta 3001)
+```
+
+Env de produção (opcional):
+
+- `ADMIN_ZONE_URL` => URL pública da zona admin
+- `TRANSACTIONS_ZONE_URL` => URL pública da zona de transações

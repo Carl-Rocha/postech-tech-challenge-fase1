@@ -1,7 +1,8 @@
 import "./globals.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Header } from "@/components/header";
+import Header from "@/components/header/index";
+import ReduxProvider from "@/components/providers/ReduxProvider";
 
 export const metadata = {
   title: "Projeto Financeiro",
@@ -28,10 +29,10 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Header></Header>
-        <div className="container">
-          <main>{children}</main>
-        </div>
+        <ReduxProvider>
+          <Header />
+          <main style={{ marginTop: "100px" }}>{children}</main>
+        </ReduxProvider>
       </body>
     </html>
   );

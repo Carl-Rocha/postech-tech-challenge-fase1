@@ -4,7 +4,7 @@ import { classNames } from '@/utils/classNames';
 
 type TypographyProps = React.HTMLAttributes<HTMLElement> & {
   variant?: 'heading' | 'body' | 'caption';
-  as?: keyof JSX.IntrinsicElements;
+  as?: React.ElementType;
 };
 
 export function Typography({
@@ -13,7 +13,7 @@ export function Typography({
   className,
   ...props
 }: TypographyProps) {
-  const Tag = Component as keyof JSX.IntrinsicElements;
+  const Tag = Component as React.ElementType;
   const classes = classNames(styles[variant], className);
   return React.createElement(Tag, { ...props, className: classes });
 }

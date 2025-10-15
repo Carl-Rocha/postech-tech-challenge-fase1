@@ -10,9 +10,17 @@ export class TransactionService {
       throw new Error('Erro ao buscar transações');
     }
     const data = await res.json();
-    type TransactionDTO = { id: number; tipo: string; valor: number; data: string, comprovanteBase64?: string  };
+    type TransactionDTO = { id?: number; tipo: string; valor: number; data: string; comprovanteBase64?: string };
     return (data.transacao || []).map(
-      (t: TransactionDTO) => new Transaction({ id: t.id, tipo: t.tipo, valor: t.valor, data: t.data, comprovanteBase64: t.comprovanteBase64 })
+      (t: TransactionDTO, index: number) =>
+        new Transaction({
+          // Some API items have no id; generate a stable local id
+          id: typeof t.id === 'number' && !Number.isNaN(t.id) ? t.id : index + 1,
+          tipo: t.tipo,
+          valor: t.valor,
+          data: t.data,
+          comprovanteBase64: t.comprovanteBase64,
+        })
     );
   }
 
@@ -22,10 +30,24 @@ export class TransactionService {
     }
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed: Transaction[] = JSON.parse(stored);
+      // Migrate any items that might be missing ids from older data
+      let needsFix = false;
+      const fixed = parsed.map((t, i) => {
+        const currentId: any = (t as any).id;
+        if (typeof currentId !== 'number' || Number.isNaN(currentId)) {
+          needsFix = true;
+          return { ...(t as any), id: i + 1 } as Transaction;
+        }
+        return t;
+      });
+      if (needsFix) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(fixed));
+      }
+      return fixed;
     }
     const initial = await this.fetchFromApi();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     return initial;
   }
 
@@ -41,8 +63,6 @@ export class TransactionService {
   }
 
   static async update(transaction: Transaction): Promise<void> {
-    console.log(transaction);
-    
     const all = await this.getAll();
     const index = all.findIndex((t) => t.id === transaction.id);
     if (index !== -1) {
@@ -57,3 +77,4 @@ export class TransactionService {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
   }
 }
+

@@ -17,6 +17,7 @@
 /.next/
 zones/admin/.next/
 zones/transactions/.next/
+zones/admin/.next/
 out/
 zones/transactions/out/
 

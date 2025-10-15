@@ -1,8 +1,5 @@
 .newTransaction {
-  background-color: var(--color-tertiary) !important;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 0 6px rgba(0,0,0,0.05);
-  color: var(--color-tertiary);
-  max-height: 478px;
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
 }

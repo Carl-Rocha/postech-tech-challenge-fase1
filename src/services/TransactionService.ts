@@ -10,9 +10,17 @@ export class TransactionService {
       throw new Error('Erro ao buscar transações');
     }
     const data = await res.json();
-    type TransactionDTO = { id: number; tipo: string; valor: number; data: string };
+    type TransactionDTO = { id?: number; tipo: string; valor: number; data: string; comprovanteBase64?: string };
     return (data.transacao || []).map(
-      (t: TransactionDTO) => new Transaction({ id: t.id, tipo: t.tipo, valor: t.valor, data: t.data })
+      (t: TransactionDTO, index: number) =>
+        new Transaction({
+          // Some API items have no id; generate a stable local id
+          id: typeof t.id === 'number' && !Number.isNaN(t.id) ? t.id : index + 1,
+          tipo: t.tipo,
+          valor: t.valor,
+          data: t.data,
+          comprovanteBase64: t.comprovanteBase64,
+        })
     );
   }
 
@@ -22,7 +30,21 @@ export class TransactionService {
     }
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed: Transaction[] = JSON.parse(stored);
+      // Migrate any items that might be missing ids from older data
+      let needsFix = false;
+      const fixed: Transaction[] = parsed.map((t, i) => {
+        const hasValidId = typeof t.id === 'number' && Number.isFinite(t.id);
+        if (!hasValidId) {
+          needsFix = true;
+          return { ...t, id: i + 1 };
+        }
+        return t;
+      });
+      if (needsFix) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(fixed));
+      }
+      return fixed;
     }
     const initial = await this.fetchFromApi();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));

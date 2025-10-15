@@ -1,4 +1,4 @@
-﻿import { Typography, Card } from "@/design-system";
+import { Typography, Card } from "@/design-system";
 import { CardContent, TextField, MenuItem, Button, Stack } from "@mui/material";
 
 export default function CardExtratoFilter({ filter, setFilter }: {
@@ -7,7 +7,7 @@ export default function CardExtratoFilter({ filter, setFilter }: {
 }) {
   return (
     <Card>
-      <Typography variant="heading" style={{marginBottom: '0' }}>
+      <Typography variant="heading" style={{ marginBottom: '0' }}>
         Filtro
       </Typography>
       <CardContent>
@@ -20,11 +20,11 @@ export default function CardExtratoFilter({ filter, setFilter }: {
             fullWidth
           >
             <MenuItem value="">Todos</MenuItem>
-            <MenuItem value="DEPOSITO">DepÃ³sito</MenuItem>
-            <MenuItem value="TRANSFERENCIA">TransferÃªncia</MenuItem>
+            <MenuItem value="DEPOSITO">Depósito</MenuItem>
+            <MenuItem value="TRANSFERENCIA">Transferência</MenuItem>
           </TextField>
           <TextField
-            label="Data InÃ­cio"
+            label="Data Início"
             type="date"
             value={filter.dataInicio || ""}
             onChange={e => setFilter((f: any) => ({ ...f, dataInicio: e.target.value }))}
@@ -50,3 +50,4 @@ export default function CardExtratoFilter({ filter, setFilter }: {
     </Card>
   );
 }
+

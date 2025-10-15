@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "dev:transactions": "cd zones/transactions && next dev --turbopack -p 3002",
+    "dev:admin": "cd zones/admin && next dev --turbopack -p 3001",
     "dev:full": "concurrently -n MAIN,TX -c green,cyan \"yarn dev\" \"yarn dev:transactions\"",
+    "dev:full:all": "concurrently -n MAIN,ADMIN,TX -c green,magenta,cyan \"yarn dev\" \"yarn dev:admin\" \"yarn dev:transactions\"",
     "build:admin": "cd zones/admin && next build",
     "start:admin": "cd zones/admin && next start -p 3001"
   },

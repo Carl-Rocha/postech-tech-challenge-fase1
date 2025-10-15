@@ -7,14 +7,14 @@ import { Button, Input, Typography, Modal } from "@/design-system";
 import { TransactionService } from "@/services/TransactionService";
 import { Transaction } from "@/models/Transaction";
 
-type TipoTransacao = "DEPOSITO" | "TRANSFERENCIA";
+type TipoTransacao = "DEPOSITO" | "Transferência";
 
 const transactionOptions = [
-  { value: "DEPOSITO", label: "DepÃ³sito" },
-  { value: "TRANSFERENCIA", label: "TransferÃªncia" }
+  { value: "DEPOSITO", label: "Depósito" },
+  { value: "Transferência", label: "TransferÃªncia" }
 ] as const;
 
-//adicionado regras de dinehiro Brasil
+// Regras de dinheiro (formatação/parse em pt-BR)
 class Dinheiro {
   static parseBR(texto: string): number {
     if (!texto) return NaN;
@@ -38,7 +38,7 @@ class NewTransactionVM {
   constructor(init?: { type?: string; amount?: string; comprovanteBase64?: string }) {
     if (
       init?.type &&
-      (["DEPOSITO", "TRANSFERENCIA"] as const).includes(
+      (["DEPOSITO", "Transferência"] as const).includes(
         init.type as any
       )
     ) {
@@ -281,3 +281,4 @@ const NewTransaction: React.FC<NewTransactionProps> = ({
 };
 
 export default NewTransaction;
+

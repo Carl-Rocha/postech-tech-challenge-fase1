@@ -18,7 +18,7 @@ export default function RootLayout({
       <body>
         <div className="layout">
           <header className="layout__header">
-            <span className="layout__badge">Admin Zone</span>
+            <span className="layout__badge">area externa</span>
             <strong>Central de Operações</strong>
           </header>
           <main className="layout__content">{children}</main>

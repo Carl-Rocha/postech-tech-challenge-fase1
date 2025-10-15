@@ -14,7 +14,7 @@ const transactionOptions = [
   { value: "TRANSFERENCIA", label: "Transferência" }
 ] as const;
 
-//adicionado regras de dinehiro Brasil
+// Regras de dinheiro (formatação/parse em pt-BR)
 class Dinheiro {
   static parseBR(texto: string): number {
     if (!texto) return NaN;

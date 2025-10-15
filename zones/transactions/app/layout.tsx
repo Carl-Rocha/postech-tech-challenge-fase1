@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -24,7 +24,7 @@ export default function RootLayout({
             <header className="tx-header">
               <div>
                 <strong>Transactions App</strong>
-                <span className="tx-badge" style={{ marginLeft: 8 }}>Zona independente</span>
+                <span className="tx-badge" style={{ marginLeft: 8 }}>area externa</span>
               </div>
               <UserMenu />
             </header>
@@ -35,3 +35,4 @@ export default function RootLayout({
     </html>
   );
 }
+

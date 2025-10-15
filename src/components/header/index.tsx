@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
@@ -64,6 +64,10 @@ export default function Header() {
 
   const hasAppBar = !hiddenPages.includes(pathname);
   const showLoginButton = pathname === '/transactions' || pathname === '/dashboard';
+  const txBase = (process.env.NEXT_PUBLIC_ENABLE_TRANSACTIONS_ZONE === 'true' && process.env.NEXT_PUBLIC_TRANSACTIONS_ZONE_URL)
+    ? String(process.env.NEXT_PUBLIC_TRANSACTIONS_ZONE_URL).replace(/\/$/, '')
+    : '';
+  const transactionsHref = txBase ? `${txBase}/transactions` : '/transactions';
 
   if (!hasAppBar) {
     return null;
@@ -121,7 +125,7 @@ export default function Header() {
         <Box sx={{ width: 250 }} role="presentation" onClick={handleDrawerClose}>
           <List>
             <ListItem disablePadding>
-              <ListItemButton onClick={() => window.location.href = '/transactions'}>
+              <ListItemButton onClick={() => window.location.href = transactionsHref}>
                 <ListItemText primary="Transações" />
               </ListItemButton>
             </ListItem>
@@ -148,3 +152,6 @@ export default function Header() {
     </>
   );
 }
+
+
+

@@ -1,4 +1,5 @@
-﻿"use client";
+"use client";
+
 import { useEffect, useState } from "react";
 import NewTransaction from "@/components/newTransaction";
 import CardExtrato from "@/components/cardExtrato";
@@ -11,18 +12,9 @@ import ExtratoFilterCard from "@/components/cardExtratoFilter";
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { setTransactions, addTransaction, updateTransaction, removeTransaction, TransactionData } from '@/features/transactions/transactionSlice';
 
-function parseUsernameFromToken(): string | null {
-  try {
-    const token = localStorage.getItem('authToken');
-    if (!token) return null;
-    const payload = JSON.parse(atob(token.split('.')[1] || ''));
-    return payload?.username ?? null;
-  } catch {
-    return null;
-  }
-}
-
 function isAuthenticated() {
+  console.log(localStorage.getItem("authToken"));
+  
   return !!localStorage.getItem("authToken");
 }
 
@@ -30,7 +22,6 @@ export default function Transactions() {
   const dispatch = useAppDispatch();
   const { transactions } = useAppSelector((state) => state.transactions);
   const [auth, setAuth] = useState<boolean>(false);
-  const [nomeCliente, setNomeCliente] = useState<string>("");
   const [isNewTransactionModalOpen, setIsNewTransactionModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<{ id: string; type: string; amount: string; date: string, comprovanteBase64?: string } | null>(null);
   const [filter, setFilter] = useState<{ tipo?: string; dataInicio?: string; dataFim?: string }>({});
@@ -39,12 +30,12 @@ export default function Transactions() {
   useEffect(() => {
     const authenticated = isAuthenticated();
     setAuth(authenticated);
+
     if (!authenticated) {
       router.replace('/login');
     } else {
-      const username = parseUsernameFromToken();
-      if (username) setNomeCliente(username);
       TransactionService.getAll().then((savedTransactions) => {
+        // Converter instâncias da classe Transaction para objetos simples
         const serializableTransactions: TransactionData[] = savedTransactions.map(t => ({
           id: t.id,
           tipo: t.tipo,
@@ -66,12 +57,13 @@ export default function Transactions() {
     0
   );
 
+  //filtrar os extratos
   const filteredTransactions = transactions.filter((t) => {
     const matchTipo = filter.tipo ? t.tipo === filter.tipo : true;
     const matchInicio = filter.dataInicio ? new Date(t.data) >= new Date(filter.dataInicio) : true;
     const matchFim = filter.dataFim ? new Date(t.data) <= new Date(filter.dataFim) : true;
     return matchTipo && matchInicio && matchFim;
-  });
+  }); 
 
   const handleNewTransaction = async ({
     type,
@@ -85,6 +77,7 @@ export default function Transactions() {
     comprovanteBase64?: string;
   }) => {
     if (id) {
+      // editar
       const updatedTransaction = new Transaction({
         id: parseInt(id),
         tipo: type,
@@ -93,6 +86,7 @@ export default function Transactions() {
         comprovanteBase64
       });
       await TransactionService.update(updatedTransaction);
+      // Converter para formato serializável
       const serializableTransaction: TransactionData = {
         id: updatedTransaction.id,
         tipo: updatedTransaction.tipo,
@@ -103,6 +97,7 @@ export default function Transactions() {
       dispatch(updateTransaction(serializableTransaction));
       setEditingTransaction(null);
     } else {
+      // add transacao
       const newTransaction = new Transaction({
         id: Date.now(),
         tipo: type,
@@ -111,6 +106,7 @@ export default function Transactions() {
         comprovanteBase64,
       });
       await TransactionService.add(newTransaction);
+      // Converter para formato serializável
       const serializableTransaction: TransactionData = {
         id: newTransaction.id,
         tipo: newTransaction.tipo,
@@ -146,7 +142,7 @@ export default function Transactions() {
   return (
     <div className="d-flex justify-content-center gap-3 mt-3">
       <div className="col-md-4">
-        <CardSaldo nomeCliente={nomeCliente || 'Usuário'} saldoTotal={saldo} />
+        <CardSaldo nomeCliente="Joana" saldoTotal={saldo} />
           <Button 
               onClick={() => {
                 setEditingTransaction(null);
@@ -187,3 +183,4 @@ export default function Transactions() {
     </div>
   );
 }
+

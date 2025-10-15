@@ -7,7 +7,7 @@ export class TransactionService {
   private static async fetchFromApi(): Promise<Transaction[]> {
     const res = await fetch(API_URL, { cache: 'no-store' });
     if (!res.ok) {
-      throw new Error('Erro ao buscar transaÃ§Ãµes');
+      throw new Error('Erro ao buscar transações');
     }
     const data = await res.json();
     type TransactionDTO = { id: number; tipo: string; valor: number; data: string, comprovanteBase64?: string  };
@@ -57,3 +57,4 @@ export class TransactionService {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
   }
 }
+
